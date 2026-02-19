@@ -120,21 +120,23 @@ Provider         多 Provider      daily/weekly/     按需加载         费用
 
 **交付物**：
 
-- [ ] 实现 JSON fetch 数据层（`services/api.ts`）
+- [x] 实现 JSON fetch 数据层（`services/api.ts`）
   - base URL 配置（指向 GitHub Pages）
   - meta.json + latest.json 启动加载
   - 按需加载 daily / provider / machine JSON
-- [ ] 实现 Dexie.js 缓存层（`services/cache.ts`）
+- [x] 实现 Dexie.js 缓存层（`services/cache.ts`）
   - stale-while-revalidate 策略
   - 缓存过期清理
-- [ ] Dashboard 页面对接 `latest.json`
-  - 月度总费用
-  - 产品消耗占比图
-  - 近 7/30 天趋势图
-  - 产品排行
-- [ ] Provider 详情页对接 `providers/*.json`
-- [ ] 时间范围分析页对接 `daily/*.json` + `monthly/*.json`
-- [ ] 部署 Frontend 到 GitHub Pages（代码仓库 `token-matters`）
+- [x] Dashboard 页面对接 `latest.json`
+  - Token 总量（完整数字）+ 费用注脚
+  - 产品明细表（Logo + 费用 + Token + 数据精度 badge）
+  - 近 7/30 天趋势柱状图
+  - 今日概要
+- [x] Provider 详情页对接 `providers/*.json`
+- [x] 时间范围分析页对接 `daily/*.json` + `weekly/*.json` + `monthly/*.json`
+- [x] Settings 页面（主题切换、缓存管理、数据导出）
+- [x] 部署 Frontend 到 GitHub Pages（代码仓库 `token-matters`）
+- [x] GitHub Actions workflow（`deploy-frontend.yml`）+ SPA 404 路由 hack
 
 **验证标准**：
 
