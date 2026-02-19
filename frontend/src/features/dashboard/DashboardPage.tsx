@@ -44,8 +44,8 @@ export function DashboardPage() {
         <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
           {trendRange === '7d' ? 'Last 7 Days' : 'Last 30 Days'} Total
         </h2>
-        <div className="flex items-baseline gap-3">
-          <p className="text-4xl font-light font-mono tabular-nums tracking-tight">
+        <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+          <p className="text-3xl sm:text-4xl font-light font-mono tabular-nums tracking-tight">
             {period.totals.totalTokens.toLocaleString()}
           </p>
           <span className="text-xs text-muted-foreground">tokens</span>
@@ -103,7 +103,7 @@ export function DashboardPage() {
           Today
         </h2>
         {today ? (
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-4 sm:gap-6">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Tokens</p>
               <p className="text-lg font-light font-mono tabular-nums">

@@ -68,7 +68,7 @@ export function ProviderPage() {
         <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
           Totals
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Cost</p>
             <p className="text-lg font-light font-mono tabular-nums">
@@ -122,15 +122,15 @@ export function ProviderPage() {
               ? (item.value / totals.totalTokens) * 100
               : 0;
             return (
-              <div key={item.label} className="flex items-center gap-4">
-                <span className="text-sm w-32 text-muted-foreground">{item.label}</span>
+              <div key={item.label} className="flex items-center gap-2 sm:gap-4">
+                <span className="text-xs sm:text-sm w-20 sm:w-32 shrink-0 text-muted-foreground">{item.label}</span>
                 <div className="flex-1 h-2 bg-muted">
                   <div
                     className="h-full bg-foreground opacity-60"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className="text-sm font-mono tabular-nums w-20 text-right">
+                <span className="text-xs sm:text-sm font-mono tabular-nums w-16 sm:w-20 text-right shrink-0">
                   {formatTokens(item.value)}
                 </span>
               </div>

@@ -92,7 +92,7 @@ export function AnalyticsPage() {
       <hr className="border-border" />
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
         <div className="flex gap-1">
           {(['daily', 'weekly', 'monthly'] as const).map((g) => (
             <button
@@ -119,7 +119,7 @@ export function AnalyticsPage() {
             onChange={(e) => {
               if (e.target.value) loadFile(e.target.value);
             }}
-            className="border bg-background px-3 py-1 text-sm"
+            className="border bg-background px-3 py-1 text-sm w-full sm:w-auto"
           >
             <option value="">Select {granularity} period...</option>
             {[...files].reverse().map((f) => (
@@ -139,22 +139,22 @@ export function AnalyticsPage() {
         <>
           <section>
             <p className="text-xs text-muted-foreground mb-2">{dateLabel}</p>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-3 gap-4 sm:gap-6">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Cost</p>
-                <p className="text-2xl font-light font-mono tabular-nums">
+                <p className="text-xl sm:text-2xl font-light font-mono tabular-nums">
                   {formatCost(totals.cost.totalUSD)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Tokens</p>
-                <p className="text-2xl font-light font-mono tabular-nums">
+                <p className="text-xl sm:text-2xl font-light font-mono tabular-nums">
                   {formatTokens(totals.totalTokens)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Requests</p>
-                <p className="text-2xl font-light font-mono tabular-nums">
+                <p className="text-xl sm:text-2xl font-light font-mono tabular-nums">
                   {totals.requests}
                 </p>
               </div>

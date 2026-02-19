@@ -27,11 +27,11 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  --color-chart-1: #000000;
-  --color-chart-2: #404040;
-  --color-chart-3: #808080;
-  --color-chart-4: #a0a0a0;
-  --color-chart-5: #d0d0d0;
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 }
 
 :root {
@@ -54,6 +54,12 @@
   --border: 0 0% 90%;
   --input: 0 0% 90%;
   --ring: 0 0% 0%;
+
+  --chart-1: #000000;
+  --chart-2: #404040;
+  --chart-3: #808080;
+  --chart-4: #a0a0a0;
+  --chart-5: #d0d0d0;
 }
 
 .dark {
@@ -76,6 +82,12 @@
   --border: 0 0% 15%;
   --input: 0 0% 15%;
   --ring: 0 0% 100%;
+
+  --chart-1: #ffffff;
+  --chart-2: #d0d0d0;
+  --chart-3: #a0a0a0;
+  --chart-4: #707070;
+  --chart-5: #404040;
 }
 
 * {

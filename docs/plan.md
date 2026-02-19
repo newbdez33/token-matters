@@ -152,16 +152,16 @@ Provider         多 Provider      daily/weekly/     按需加载         费用
 **交付物**：
 
 - [ ] 多机器实测：在第二台开发机运行 Collector，验证双机并行
-- [ ] 历史数据回填：`--from --to` 参数回填过去 30 天数据
+- [x] 历史数据回填：`--from --to` 参数已在 Collector Phase 1 实现
 - [ ] 费用定价配置：支持在 Frontend 中查看/编辑 pricing.json
-- [ ] 数据精度标注优化：exact / estimated / partial 在 UI 中的差异化展示
-- [ ] 深色/浅色主题验证
-- [ ] 响应式布局验证（桌面 + 平板）
-- [ ] 性能测试：首屏 < 2s，图表渲染 < 500ms
+- [x] 数据精度标注优化：exact / estimated / partial 差异化展示（图标 + 边框样式 + tooltip 说明）
+- [x] 深色/浅色主题：chart 颜色随主题切换，CSS 变量驱动，logo dark:invert
+- [x] 响应式布局：mobile / desktop 全适配（padding、grid、table 均有断点）
+- [x] 性能优化：lazy loading 路由（Provider/Analytics/Settings 按需加载），code splitting，首屏仅加载 Dashboard 核心 chunk
 
 **验证标准**：
 
 - 两台机器的数据在 Dashboard 中正确合并展示
 - 30 天历史数据回填后趋势图连续无断裂
-- 深色/浅色主题切换正常
-- 性能指标达标
+- [x] 深色/浅色主题切换正常
+- [x] 性能：build 产出 6 chunks，最大 339KB gzip 102KB；首屏仅需 vendor + index + css

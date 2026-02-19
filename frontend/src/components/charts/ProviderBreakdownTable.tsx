@@ -11,7 +11,8 @@ interface ProviderBreakdownTableProps {
 export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProps) {
   return (
     <div>
-      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-6 text-xs text-muted-foreground uppercase tracking-wider pb-3 border-b">
+      {/* Desktop header */}
+      <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-x-6 text-xs text-muted-foreground uppercase tracking-wider pb-3 border-b">
         <span>Product</span>
         <span className="text-right">Cost</span>
         <span className="text-right">Tokens</span>
@@ -23,8 +24,9 @@ export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProp
           <Link
             key={p.provider}
             to={`/providers/${p.provider}`}
-            className="grid grid-cols-[1fr_auto_auto_auto] gap-x-6 items-center h-12 border-b text-sm no-underline text-foreground hover:bg-muted/50 transition-colors"
+            className="block sm:grid sm:grid-cols-[1fr_auto_auto_auto] sm:gap-x-6 sm:items-center sm:h-12 border-b py-3 sm:py-0 text-sm no-underline text-foreground hover:bg-muted/50 transition-colors"
           >
+            {/* Product name row */}
             <span className="flex items-center gap-2">
               {config.logo ? (
                 <img src={config.logo} alt="" className="w-4 h-4 shrink-0 dark:invert" />
@@ -35,14 +37,27 @@ export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProp
                 />
               )}
               {config.name}
+              <span className="sm:hidden ml-auto">
+                <DataQualityBadge quality={p.dataQuality} />
+              </span>
             </span>
-            <span className="text-right font-mono tabular-nums">
+            {/* Mobile: cost + tokens inline */}
+            <span className="flex sm:hidden items-center gap-3 mt-1 pl-6 text-xs text-muted-foreground">
+              <span className="font-mono tabular-nums text-foreground">
+                {formatCost(p.cost, p.currency)}
+              </span>
+              <span className="font-mono tabular-nums">
+                {formatTokens(p.totalTokens)} tokens
+              </span>
+            </span>
+            {/* Desktop columns */}
+            <span className="hidden sm:inline text-right font-mono tabular-nums">
               {formatCost(p.cost, p.currency)}
             </span>
-            <span className="text-right font-mono tabular-nums text-muted-foreground">
+            <span className="hidden sm:inline text-right font-mono tabular-nums text-muted-foreground">
               {formatTokens(p.totalTokens)}
             </span>
-            <span className="text-right">
+            <span className="hidden sm:inline text-right">
               <DataQualityBadge quality={p.dataQuality} />
             </span>
           </Link>
