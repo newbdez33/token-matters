@@ -1,9 +1,14 @@
+import claudeCodeLogo from '@/assets/providers/claude-code.svg';
+import glmCodingLogo from '@/assets/providers/glm-coding.svg';
+import traeProLogo from '@/assets/providers/trae-pro.svg';
+
 export interface ProviderConfig {
   id: string;
   name: string;
   billingMode: 'token' | 'subscription';
   currency: string;
   color: string;
+  logo?: string;
   note?: string;
 }
 
@@ -14,6 +19,7 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     billingMode: 'token',
     currency: 'USD',
     color: '#000000',
+    logo: claudeCodeLogo,
     note: 'Anthropic CLI - per token billing',
   },
   'glm-coding': {
@@ -22,6 +28,7 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     billingMode: 'subscription',
     currency: 'CNY',
     color: '#808080',
+    logo: glmCodingLogo,
     note: 'Zhipu AI coding assistant - subscription',
   },
   'trae-pro': {
@@ -30,6 +37,7 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     billingMode: 'subscription',
     currency: 'USD',
     color: '#C0C0C0',
+    logo: traeProLogo,
     note: 'ByteDance AI coding assistant - subscription',
   },
 };

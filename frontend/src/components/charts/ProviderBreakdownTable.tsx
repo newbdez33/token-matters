@@ -26,10 +26,14 @@ export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProp
             className="grid grid-cols-[1fr_auto_auto_auto] gap-x-6 items-center h-12 border-b text-sm no-underline text-foreground hover:bg-muted/50 transition-colors"
           >
             <span className="flex items-center gap-2">
-              <span
-                className="inline-block w-2 h-2"
-                style={{ backgroundColor: config.color }}
-              />
+              {config.logo ? (
+                <img src={config.logo} alt="" className="w-4 h-4 shrink-0 dark:invert" />
+              ) : (
+                <span
+                  className="inline-block w-2 h-2 shrink-0"
+                  style={{ backgroundColor: config.color }}
+                />
+              )}
               {config.name}
             </span>
             <span className="text-right font-mono tabular-nums">
