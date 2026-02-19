@@ -55,7 +55,7 @@ export function AppLayout() {
       <footer className="border-t">
         <div className="mx-auto max-w-4xl px-8 py-6 text-center">
           <p className="text-xs text-muted-foreground">
-            Made with ❤️ by Jacky
+            Made with ❤️
           </p>
           <a
             href="https://github.com/newbdez33/token-matters"
