@@ -1,0 +1,9 @@
+{
+  "lastRun": "2026-02-18T12:00:00.000Z",
+  "providers": {
+    "claude-code": {
+      "lastCollectedDate": "2026-02-18",
+      "checkpoint": "2026-02-18T23:59:59.000Z"
+    }
+  }
+}

@@ -81,7 +81,7 @@ Token Matters 采用**三组件 + 双仓库架构**，将隐私数据与公开�
 ```
 token-matters-data/
 ├── raw/                                    # Collector 写入，append-only
-│   ├── macbook-pro/                        # 机器名（kebab-case）
+│   ├── j-studio/                           # 机器名（从 hostname 自动推导，kebab-case）
 │   │   ├── claude-code/                    # Provider 标识
 │   │   │   ├── 2026-02-19_a1b2c3.json
 │   │   │   └── ...
@@ -122,7 +122,7 @@ token-matters-summary/
 │   │   ├── glm-coding.json
 │   │   └── trae-pro.json
 │   ├── machines/                           # 按机器维度
-│   │   ├── macbook-pro.json
+│   │   ├── j-studio.json
 │   │   └── imac-studio.json
 │   ├── latest.json                         # 最新汇总（Dashboard 首页）
 │   └── meta.json                           # 索引：日期范围、Provider 列表等
@@ -137,7 +137,7 @@ Raw 文件完整路径：`raw/{machine}/{provider}/{date}_{hash}.json`
 
 | 组成部分 | 格式 | 示例 | 说明 |
 |----------|------|------|------|
-| `machine` | kebab-case hostname | `macbook-pro` | 机器名，区分多设备 |
+| `machine` | kebab-case hostname | `j-studio` | 从 hostname 自动推导，可在 config.yaml 中覆盖 |
 | `provider` | 固定标识符 | `claude-code` | `claude-code` / `glm-coding` / `trae-pro` |
 | `date` | `YYYY-MM-DD` | `2026-02-19` | 数据所属日期 |
 | `hash` | 6 位 hex | `a1b2c3` | 内容摘要，用于去重 |
@@ -283,7 +283,7 @@ interface PeriodSummary {
 ## 3. 数据流全景
 
 ```
-开发机 A (macbook-pro)               开发机 B (imac-studio)
+开发机 A (j-studio)                  开发机 B (imac-studio)
 ┌───────────────────┐               ┌───────────────────┐
 │ Claude Code JSONL │               │ Claude Code JSONL │
 │ GLM 监控 API      │               │ TRAE ai-agent 日志│
@@ -297,9 +297,9 @@ interface PeriodSummary {
 ┌────────────────────────────────────────────────────────┐
 │           GitHub: token-matters-data [Private]          │
 │                                                        │
-│  raw/macbook-pro/claude-code/2026-02-19_a1b2c3.json   │
-│  raw/macbook-pro/glm-coding/2026-02-19_d4e5f6.json    │
-│  raw/macbook-pro/trae-pro/2026-02-19_g7h8i9.json      │
+│  raw/j-studio/claude-code/2026-02-19_a1b2c3.json      │
+│  raw/j-studio/glm-coding/2026-02-19_d4e5f6.json       │
+│  raw/j-studio/trae-pro/2026-02-19_g7h8i9.json         │
 │  raw/imac-studio/claude-code/2026-02-19_j0k1l2.json   │
 │  raw/imac-studio/trae-pro/2026-02-19_m3n4o5.json      │
 │  pricing.json                                          │
@@ -316,7 +316,7 @@ interface PeriodSummary {
 │  summary/weekly/2026-W08.json                          │
 │  summary/monthly/2026-02.json                          │
 │  summary/providers/claude-code.json                    │
-│  summary/machines/macbook-pro.json                     │
+│  summary/machines/j-studio.json                        │
 │  summary/latest.json                                   │
 │  summary/meta.json                                     │
 │                                                        │

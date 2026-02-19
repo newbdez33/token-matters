@@ -1,0 +1,6 @@
+
+not valid json at all
+{"type":"assistant","message":{"model":"claude-opus-4-6","id":"msg_bad","role":"assistant","content":[{"type":"text","text":"no usage"}]},"uuid":"bad1","timestamp":"2026-02-18T10:00:00.000Z"}
+{"type":"assistant","message":{"model":"claude-opus-4-6","id":"msg_no_ts","role":"assistant","content":[{"type":"text","text":"no timestamp"}],"usage":{"input_tokens":10,"output_tokens":5,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}},"uuid":"bad2"}
+{"broken json
+{"type":"assistant","message":{"model":"claude-opus-4-6","id":"msg_ok","role":"assistant","content":[{"type":"text","text":"this is valid"}],"usage":{"input_tokens":30,"output_tokens":20,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}},"uuid":"ok1","timestamp":"2026-02-18T12:00:00.000Z"}

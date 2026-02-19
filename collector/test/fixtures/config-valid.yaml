@@ -1,0 +1,16 @@
+machine: macbook-pro
+dataRepo: ~/projects/token-matters-data
+timezone: Asia/Shanghai
+
+providers:
+  claude-code:
+    enabled: true
+    claudeDir: ~/.claude
+
+  glm-coding:
+    enabled: false
+    apiKey: test-key
+
+  trae-pro:
+    enabled: false
+    traeDir: ~/Library/Application Support/Trae

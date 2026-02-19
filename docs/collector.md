@@ -143,7 +143,9 @@ interface CollectorState {
 
 ## 7. 定时调度
 
-### macOS launchd（推荐每日凌晨执行）
+### macOS launchd（每日 00:30 执行）
+
+plist 路径：`~/Library/LaunchAgents/com.token-matters.collector.plist`
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -153,12 +155,25 @@ interface CollectorState {
 <dict>
   <key>Label</key>
   <string>com.token-matters.collector</string>
+
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/npx</string>
+    <string>/path/to/.nvm/versions/node/vXX/bin/npx</string>
     <string>tsx</string>
     <string>/path/to/token-matters/collector/src/main.ts</string>
   </array>
+
+  <key>WorkingDirectory</key>
+  <string>/path/to/token-matters/collector</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/path/to/.nvm/versions/node/vXX/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>/Users/yourname</string>
+  </dict>
+
   <key>StartCalendarInterval</key>
   <dict>
     <key>Hour</key>
@@ -166,6 +181,7 @@ interface CollectorState {
     <key>Minute</key>
     <integer>30</integer>
   </dict>
+
   <key>StandardOutPath</key>
   <string>/tmp/token-matters-collector.log</string>
   <key>StandardErrorPath</key>
@@ -174,10 +190,31 @@ interface CollectorState {
 </plist>
 ```
 
+> **注意**：launchd 不加载 shell profile，必须在 plist 中显式设置 `PATH`（包含 node/npx 所在目录）和 `HOME`。
+
+常用命令：
+
+```bash
+# 加载（开机自动生效）
+launchctl load ~/Library/LaunchAgents/com.token-matters.collector.plist
+
+# 手动触发一次
+launchctl start com.token-matters.collector
+
+# 查看状态
+launchctl list | grep token-matters
+
+# 卸载
+launchctl unload ~/Library/LaunchAgents/com.token-matters.collector.plist
+
+# 查看日志
+cat /tmp/token-matters-collector.log
+```
+
 ### Linux cron
 
 ```
-30 0 * * * cd /path/to/token-matters && npx tsx collector/src/main.ts >> /tmp/token-matters-collector.log 2>&1
+30 0 * * * cd /path/to/token-matters/collector && npx tsx src/main.ts >> /tmp/token-matters-collector.log 2>&1
 ```
 
 ---
@@ -187,7 +224,7 @@ interface CollectorState {
 路径：`~/.token-matters/config.yaml`
 
 ```yaml
-machine: macbook-pro                          # 机器标识（kebab-case）
+# machine: my-host                            # 可选，默认从 hostname 自动推导（去 .local、小写、kebab-case）
 dataRepo: ~/projects/token-matters-data       # 数据仓库本地 clone 路径
 timezone: Asia/Shanghai                       # 日期聚合时区
 

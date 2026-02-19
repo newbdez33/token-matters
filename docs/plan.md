@@ -45,7 +45,7 @@ Provider         多 Provider      daily/weekly/     按需加载         费用
 **验证标准**：
 
 - `npx tsx collector/src/main.ts` 成功采集 Claude Code 数据
-- `raw/macbook-pro/claude-code/2026-02-19_a1b2c3.json` 文件生成且格式正确
+- `raw/{machine}/claude-code/2026-02-19_a1b2c3.json` 文件生成且格式正确（machine 从 hostname 自动推导）
 - 重复运行不产生重复文件（hash 去重生效）
 - `git push` 成功将数据推送到 `token-matters-data`
 
