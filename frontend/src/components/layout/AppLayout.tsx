@@ -17,7 +17,7 @@ export function AppLayout() {
         <div className="mx-auto max-w-4xl px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="text-lg font-light tracking-tight text-foreground no-underline">
-              Token Matters
+              Jacky's Token Usage
             </Link>
             <nav className="flex items-center gap-6">
               {NAV_ITEMS.map((item) => (
