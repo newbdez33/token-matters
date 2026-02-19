@@ -1,0 +1,21 @@
+{
+  "code": 200,
+  "msg": "success",
+  "success": true,
+  "data": {
+    "x_time": [
+      "2026-02-18 08:00:00",
+      "2026-02-18 09:00:00",
+      "2026-02-19 10:00:00"
+    ],
+    "networkSearchCount": [2, null, 3],
+    "webReadMcpCount": [1, 0, 2],
+    "zreadMcpCount": [0, 0, 1],
+    "totalUsage": {
+      "totalNetworkSearchCount": 5,
+      "totalWebReadMcpCount": 3,
+      "totalZreadMcpCount": 1,
+      "totalSearchMcpCount": 0
+    }
+  }
+}

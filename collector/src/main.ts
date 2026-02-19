@@ -7,6 +7,8 @@ import { loadState, saveState } from './state.js';
 import { gitPull, gitAddCommitPush } from './git.js';
 import { writeRawDataFile } from './writer.js';
 import { createClaudeCodeProvider } from './providers/claude-code.js';
+import { createGlmCodingProvider } from './providers/glm-coding.js';
+import { createTraeProProvider } from './providers/trae-pro.js';
 import type { CollectorProvider } from './providers/types.js';
 
 export interface CliArgs {
@@ -82,7 +84,28 @@ function buildProviders(config: ReturnType<typeof loadConfig>): CollectorProvide
     }));
   }
 
-  // Phase 2 stubs will be registered here
+  const glmCodingCfg = config.providers['glm-coding'];
+  if (glmCodingCfg?.enabled !== false && glmCodingCfg?.apiKey) {
+    providers.push(createGlmCodingProvider({
+      apiKey: glmCodingCfg.apiKey as string,
+      baseUrl: (glmCodingCfg.baseUrl as string) ?? 'https://open.bigmodel.cn',
+      machine: config.machine,
+      timezone: config.timezone,
+    }));
+  }
+
+  const traeProCfg = config.providers['trae-pro'];
+  if (traeProCfg?.enabled !== false) {
+    const traeDir = typeof traeProCfg?.traeDir === 'string'
+      ? traeProCfg.traeDir.replace(/^~/, homedir())
+      : join(homedir(), 'Library/Application Support/Trae');
+    providers.push(createTraeProProvider({
+      traeDir,
+      machine: config.machine,
+      timezone: config.timezone,
+    }));
+  }
+
   return providers;
 }
 

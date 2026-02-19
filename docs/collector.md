@@ -29,8 +29,11 @@ collector/
 │   ├── providers/
 │   │   ├── types.ts               # CollectorProvider 接口定义
 │   │   ├── claude-code.ts         # Claude Code Provider
+│   │   ├── claude-code-parser.ts  # JSONL 解析/聚合纯函数
 │   │   ├── glm-coding.ts          # GLM Coding Provider
-│   │   └── trae-pro.ts            # TRAE Pro Provider
+│   │   ├── glm-coding-parser.ts   # GLM API 响应解析
+│   │   ├── trae-pro.ts            # TRAE Pro Provider
+│   │   └── trae-pro-parser.ts     # TRAE 日志解析 + Token 估算
 │   └── utils/
 │       ├── date.ts                # 日期/时区工具
 │       └── logger.ts              # 日志输出

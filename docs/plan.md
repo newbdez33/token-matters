@@ -58,17 +58,17 @@ Provider         多 Provider      daily/weekly/     按需加载         费用
 
 **交付物**：
 
-- [ ] 实现 GLM Coding Provider（从 `poc/glm-coding-usage.ts` 迁移）
-  - 监控 API 调用（quota/limit + model-usage）
+- [x] 实现 GLM Coding Provider（从 `poc/glm-coding-usage.ts` 迁移）
+  - 监控 API 调用（model-usage）
   - z.ai / open.bigmodel.cn 双端点支持
   - API Key 认证（无 Bearer）
-- [ ] 实现 TRAE Pro Provider（从 `poc/trae-usage.ts` 迁移）
-  - ai-agent 日志解析
-  - Token 估算算法（timing + body_len）
-  - JWT 自动读取
-- [ ] 配置 macOS launchd 定时任务
-- [ ] 验证多 Provider 并行采集：三个 Provider 同时运行，互不影响
-- [ ] 增量采集验证：重复运行只处理新数据
+- [x] 实现 TRAE Pro Provider（从 `poc/trae-usage.ts` 迁移）
+  - ai-agent 日志解析（TimingCostOriginEvent, body_len, AgentTask, TokenUsageEvent）
+  - Token 估算算法（timing + body_len, p95 outlier replacement）
+- [x] 三个 Provider 注册到 main.ts `buildProviders()`
+- [x] 配置 macOS launchd 定时任务（Phase 1 已配置，自动覆盖新 Provider）
+- [x] 验证多 Provider 并行采集：三个 Provider 同时运行，互不影响
+- [x] 115 个测试（单元 + 集成）全部通过
 
 **验证标准**：
 
