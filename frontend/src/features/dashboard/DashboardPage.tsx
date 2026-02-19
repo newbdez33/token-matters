@@ -44,9 +44,15 @@ export function DashboardPage() {
         <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
           {trendRange === '7d' ? 'Last 7 Days' : 'Last 30 Days'} Total
         </h2>
-        <p className="text-4xl font-light tabular-nums tracking-tight">
-          {formatCost(totalCost)}
-        </p>
+        <div className="flex items-baseline gap-3">
+          <p className="text-4xl font-light font-mono tabular-nums tracking-tight">
+            {period.totals.totalTokens.toLocaleString()}
+          </p>
+          <span className="text-xs text-muted-foreground">tokens</span>
+          <span className="text-sm text-muted-foreground font-mono tabular-nums">
+            {formatCost(totalCost)}
+          </span>
+        </div>
         <p className="text-xs text-muted-foreground mt-1">
           {formatDate(period.dateRange.start)} – {formatDate(period.dateRange.end)}
         </p>
