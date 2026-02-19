@@ -52,6 +52,18 @@ export function AppLayout() {
       <main className="mx-auto max-w-4xl px-8 py-8">
         <Outlet />
       </main>
+      <footer className="border-t">
+        <div className="mx-auto max-w-4xl px-8 py-6 text-center">
+          <a
+            href="https://github.com/newbdez33/token-matters"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors no-underline"
+          >
+            github.com/newbdez33/token-matters
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
