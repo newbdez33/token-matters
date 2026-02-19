@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-02-19T10:00:00.000Z",
+  "machine": "test-machine",
+  "provider": "claude-code",
+  "date": "2026-02-19",
+  "dataQuality": "exact",
+  "records": [
+    {
+      "model": "claude-opus-4-6",
+      "inputTokens": 10000,
+      "outputTokens": 180000,
+      "cacheCreationTokens": 1500000,
+      "cacheReadTokens": 47000000,
+      "totalTokens": 48690000,
+      "requests": 550
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "inputTokens": 2000,
+      "outputTokens": 5000,
+      "cacheCreationTokens": 50000,
+      "cacheReadTokens": 300000,
+      "totalTokens": 357000,
+      "requests": 10
+    }
+  ]
+}

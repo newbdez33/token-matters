@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-02-17T10:00:00.000Z",
+  "machine": "test-machine",
+  "provider": "claude-code",
+  "date": "2026-02-17",
+  "dataQuality": "exact",
+  "records": [
+    {
+      "model": "claude-opus-4-6",
+      "inputTokens": 5000,
+      "outputTokens": 100000,
+      "cacheCreationTokens": 500000,
+      "cacheReadTokens": 20000000,
+      "totalTokens": 20605000,
+      "requests": 200
+    },
+    {
+      "model": "claude-haiku-4-5-20251001",
+      "inputTokens": 500,
+      "outputTokens": 100,
+      "cacheCreationTokens": 100000,
+      "cacheReadTokens": 1000000,
+      "totalTokens": 1100600,
+      "requests": 30
+    },
+    {
+      "model": "<synthetic>",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 0,
+      "totalTokens": 0,
+      "requests": 2
+    }
+  ]
+}

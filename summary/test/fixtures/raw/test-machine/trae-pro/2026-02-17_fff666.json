@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-02-17T10:00:00.000Z",
+  "machine": "test-machine",
+  "provider": "trae-pro",
+  "date": "2026-02-17",
+  "dataQuality": "estimated",
+  "records": [
+    {
+      "totalTokens": 200000,
+      "inputTokens": 180000,
+      "outputTokens": 20000,
+      "requests": 100,
+      "note": "TRAE ai-agent log (estimated: 20 agent tasks, models: gemini-3-pro)"
+    }
+  ]
+}

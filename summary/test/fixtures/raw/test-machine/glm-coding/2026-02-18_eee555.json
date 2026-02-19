@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-02-18T10:00:00.000Z",
+  "machine": "test-machine",
+  "provider": "glm-coding",
+  "date": "2026-02-18",
+  "dataQuality": "partial",
+  "records": [
+    {
+      "totalTokens": 5000000,
+      "requests": 80,
+      "note": "GLM monitoring API (aggregated, no input/output breakdown)"
+    }
+  ]
+}

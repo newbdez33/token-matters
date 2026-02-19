@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "collectedAt": "2026-02-18T10:00:00.000Z",
+  "machine": "test-machine",
+  "provider": "claude-code",
+  "date": "2026-02-18",
+  "dataQuality": "exact",
+  "records": [
+    {
+      "model": "claude-opus-4-6",
+      "inputTokens": 3000,
+      "outputTokens": 80000,
+      "cacheCreationTokens": 400000,
+      "cacheReadTokens": 15000000,
+      "totalTokens": 15483000,
+      "requests": 150
+    }
+  ]
+}
