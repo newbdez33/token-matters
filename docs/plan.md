@@ -35,19 +35,22 @@ Provider         多 Provider      daily/weekly/     按需加载         费用
   - Git 操作封装（`git.ts`）
   - Content hash 计算（`hash.ts`）
   - Provider 接口定义（`providers/types.ts`）
-- [ ] 实现 Claude Code Provider（从 `poc/claude-code-usage.ts` 迁移）
-  - JSONL 文件扫描与解析
-  - 按日聚合
+- [x] 实现 Claude Code Provider（从 `poc/claude-code-usage.ts` 迁移）
+  - JSONL 文件扫描与解析（含 message.id 去重）
+  - 按日聚合（时区感知）
   - 增量状态管理
-- [ ] 手动运行验证：raw 文件生成 + git push 到 `token-matters-data`
-- [ ] 编写 `~/.token-matters/config.yaml` 示例配置
+- [x] 手动运行验证：raw 文件生成 + git push 到 `token-matters-data`
+- [x] 编写 `~/.token-matters/config.yaml`（machine 从 hostname 自动推导）
+- [x] launchd 定时调度已部署验证（每日 00:30）
+- [x] 75 个测试（单元 + 集成）全部通过
 
-**验证标准**：
+**验证标准**（均已通过）：
 
 - `npx tsx collector/src/main.ts` 成功采集 Claude Code 数据
-- `raw/{machine}/claude-code/2026-02-19_a1b2c3.json` 文件生成且格式正确（machine 从 hostname 自动推导）
+- `raw/j-studio/claude-code/2026-02-19_*.json` 文件生成且格式正确
 - 重复运行不产生重复文件（hash 去重生效）
 - `git push` 成功将数据推送到 `token-matters-data`
+- `launchctl start com.token-matters.collector` 手动触发正常运行
 
 ### Phase 2：多 Provider 采集
 

@@ -143,7 +143,7 @@ interface CollectorState {
 
 ## 7. 定时调度
 
-### macOS launchd（每日 00:30 执行）
+### macOS launchd（每日 00:30 执行）✅ 已部署验证
 
 plist 路径：`~/Library/LaunchAgents/com.token-matters.collector.plist`
 
