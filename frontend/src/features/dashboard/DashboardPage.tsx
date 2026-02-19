@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDataStore } from '@/stores/useDataStore';
 import { useFilterStore } from '@/stores/useFilterStore';
-import { formatCost, formatTokens, formatNumber, formatDate } from '@/utils/format';
+import { formatCost, formatNumber, formatDate } from '@/utils/format';
 import { TrendBarChart } from '@/components/charts/TrendBarChart';
 import { ProviderBreakdownTable } from '@/components/charts/ProviderBreakdownTable';
 import { LoadingSkeleton, LoadingBlock } from '@/components/shared/LoadingSkeleton';
@@ -103,25 +103,19 @@ export function DashboardPage() {
           Today
         </h2>
         {today ? (
-          <div className="grid grid-cols-3 gap-4 sm:gap-6">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Tokens</p>
-              <p className="text-lg font-light font-mono tabular-nums">
-                {formatTokens(today.totals.totalTokens)}
+          <div>
+            <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+              <p className="text-2xl font-light font-mono tabular-nums tracking-tight">
+                {today.totals.totalTokens.toLocaleString()}
               </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Requests</p>
-              <p className="text-lg font-light font-mono tabular-nums">
-                {formatNumber(today.totals.requests)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">Cost</p>
-              <p className="text-lg font-light font-mono tabular-nums">
+              <span className="text-xs text-muted-foreground">tokens</span>
+              <span className="text-sm text-muted-foreground font-mono tabular-nums">
                 {formatCost(today.totals.cost.totalUSD)}
-              </p>
+              </span>
             </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatNumber(today.totals.requests)} requests
+            </p>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">No data for today yet.</p>

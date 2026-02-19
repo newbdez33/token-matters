@@ -68,30 +68,18 @@ export function ProviderPage() {
         <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
           Totals
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Cost</p>
-            <p className="text-lg font-light font-mono tabular-nums">
-              {formatCost(totals.cost.totalUSD)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Total Tokens</p>
-            <p className="text-lg font-light font-mono tabular-nums">
-              {formatTokens(totals.totalTokens)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Requests</p>
-            <p className="text-lg font-light font-mono tabular-nums">
-              {formatNumber(totals.requests)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-1">Billing</p>
-            <p className="text-sm">{config.billingMode}</p>
-          </div>
+        <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-3">
+          <p className="text-2xl sm:text-3xl font-light font-mono tabular-nums tracking-tight">
+            {totals.totalTokens.toLocaleString()}
+          </p>
+          <span className="text-xs text-muted-foreground">tokens</span>
+          <span className="text-sm text-muted-foreground font-mono tabular-nums">
+            {formatCost(totals.cost.totalUSD)}
+          </span>
         </div>
+        <p className="text-xs text-muted-foreground">
+          {formatNumber(totals.requests)} requests &middot; {config.billingMode}
+        </p>
       </section>
 
       <hr className="border-border" />

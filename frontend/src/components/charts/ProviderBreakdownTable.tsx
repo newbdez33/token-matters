@@ -1,6 +1,6 @@
 import type { ProviderSummary } from '@/types/summary';
 import { getProviderConfig } from '@/config/providers';
-import { formatCost, formatTokens } from '@/utils/format';
+import { formatCost } from '@/utils/format';
 import { DataQualityBadge } from '@/components/shared/DataQualityBadge';
 import { Link } from 'react-router-dom';
 
@@ -14,8 +14,8 @@ export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProp
       {/* Desktop header */}
       <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-x-6 text-xs text-muted-foreground uppercase tracking-wider pb-3 border-b">
         <span>Product</span>
-        <span className="text-right">Cost</span>
         <span className="text-right">Tokens</span>
+        <span className="text-right">Cost</span>
         <span className="text-right">Quality</span>
       </div>
       {providers.map((p) => {
@@ -41,21 +41,21 @@ export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProp
                 <DataQualityBadge quality={p.dataQuality} />
               </span>
             </span>
-            {/* Mobile: cost + tokens inline */}
-            <span className="flex sm:hidden items-center gap-3 mt-1 pl-6 text-xs text-muted-foreground">
+            {/* Mobile: tokens + cost inline */}
+            <span className="flex sm:hidden items-center gap-3 mt-1 pl-6 text-xs">
               <span className="font-mono tabular-nums text-foreground">
-                {formatCost(p.cost, p.currency)}
+                {p.totalTokens.toLocaleString()} tokens
               </span>
-              <span className="font-mono tabular-nums">
-                {formatTokens(p.totalTokens)} tokens
+              <span className="font-mono tabular-nums text-muted-foreground">
+                {formatCost(p.cost, p.currency)}
               </span>
             </span>
             {/* Desktop columns */}
             <span className="hidden sm:inline text-right font-mono tabular-nums">
-              {formatCost(p.cost, p.currency)}
+              {p.totalTokens.toLocaleString()}
             </span>
             <span className="hidden sm:inline text-right font-mono tabular-nums text-muted-foreground">
-              {formatTokens(p.totalTokens)}
+              {formatCost(p.cost, p.currency)}
             </span>
             <span className="hidden sm:inline text-right">
               <DataQualityBadge quality={p.dataQuality} />

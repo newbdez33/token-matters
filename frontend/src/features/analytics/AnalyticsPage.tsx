@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useDataStore } from '@/stores/useDataStore';
 import { useFilterStore } from '@/stores/useFilterStore';
-import { formatCost, formatTokens, formatDate } from '@/utils/format';
+import { formatCost, formatDate } from '@/utils/format';
 import { TrendBarChart } from '@/components/charts/TrendBarChart';
 import { ProviderBreakdownTable } from '@/components/charts/ProviderBreakdownTable';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
@@ -139,26 +139,18 @@ export function AnalyticsPage() {
         <>
           <section>
             <p className="text-xs text-muted-foreground mb-2">{dateLabel}</p>
-            <div className="grid grid-cols-3 gap-4 sm:gap-6">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Cost</p>
-                <p className="text-xl sm:text-2xl font-light font-mono tabular-nums">
-                  {formatCost(totals.cost.totalUSD)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Tokens</p>
-                <p className="text-xl sm:text-2xl font-light font-mono tabular-nums">
-                  {formatTokens(totals.totalTokens)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Requests</p>
-                <p className="text-xl sm:text-2xl font-light font-mono tabular-nums">
-                  {totals.requests}
-                </p>
-              </div>
+            <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-2">
+              <p className="text-2xl sm:text-3xl font-light font-mono tabular-nums tracking-tight">
+                {totals.totalTokens.toLocaleString()}
+              </p>
+              <span className="text-xs text-muted-foreground">tokens</span>
+              <span className="text-sm text-muted-foreground font-mono tabular-nums">
+                {formatCost(totals.cost.totalUSD)}
+              </span>
             </div>
+            <p className="text-xs text-muted-foreground">
+              {totals.requests.toLocaleString()} requests
+            </p>
           </section>
 
           {trend.length > 1 && (
