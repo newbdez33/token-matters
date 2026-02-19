@@ -54,11 +54,14 @@ export function AppLayout() {
       </main>
       <footer className="border-t">
         <div className="mx-auto max-w-4xl px-8 py-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            Made with ❤️ by Jacky
+          </p>
           <a
             href="https://github.com/newbdez33/token-matters"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors no-underline"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors no-underline mt-1 inline-block"
           >
             github.com/newbdez33/token-matters
           </a>
