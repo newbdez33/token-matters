@@ -83,22 +83,23 @@ Provider         多 Provider      daily/weekly/     按需加载         费用
 
 **交付物**：
 
-- [ ] 实现 Summary 聚合程序（`summary/src/main.ts`）
+- [x] 实现 Summary 聚合程序（`summary/src/main.ts`）
   - raw 文件扫描与去重
   - 按日/周/月聚合
   - 按 Provider/机器维度聚合
   - 费用计算（基于 pricing.json）
   - 生成 latest.json + meta.json 索引
-- [ ] 配置 `pricing.json` 费用定价
-- [ ] 配置 GitHub Actions workflow（`summarize.yml`）
+- [x] 配置 `pricing.json` 费用定价
+- [x] 配置 GitHub Actions workflow（`summarize.yml`）
   - push 触发 + 定时触发 + 手动触发
   - 跨仓库推送到 `token-matters-summary`
-- [ ] 在 `token-matters-summary` 配置 deploy key
-- [ ] 启用 `token-matters-summary` 的 GitHub Pages
-- [ ] 实现 SVG Badge 生成（`summary/src/badge.ts`）
-  - 从 `latest.json` 读取最近 7 天 Token 总量和费用
-  - 生成 shields.io 风格的 SVG 徽章
-  - 输出到 `badge/token-usage.svg`，随 summary 一同推送
+- [x] 在 `token-matters-summary` 配置 deploy key
+- [x] 启用 `token-matters-summary` 的 GitHub Pages
+- [x] 实现 SVG Badge 生成（`summary/src/badge.ts`）
+  - 双主题：flat（shields.io 风格）+ pixel（黑框白底等宽字体）
+  - 4 个 badge：token-usage{,-cost}{,-pixel}.svg
+  - 输出到 `badge/`，随 summary 一同推送
+- [x] 100 个测试（单元 + 集成）全部通过
 
 **验证标准**：
 
