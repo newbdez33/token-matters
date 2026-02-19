@@ -18,18 +18,28 @@
                                                           └─────────────────┘
 ```
 
-**三组件 + 双仓库**：
+**三仓库**：
+
+| 仓库 | 可见性 | 内容 |
+|------|:------:|------|
+| [`token-matters`](https://github.com/newbdez33/token-matters) | Public | Collector CLI + Summary 聚合代码 + Frontend |
+| [`token-matters-data`](https://github.com/newbdez33/token-matters-data) | Private | 原始采集数据 + pricing.json + GitHub Actions workflow |
+| [`token-matters-summary`](https://github.com/newbdez33/token-matters-summary) | Public | 聚合统计 JSON + SVG badge（GitHub Pages 托管） |
+
+**数据流**：
+
+1. **采集**：开发机上 Collector CLI 定时采集各 Provider Token 数据，push 到 `token-matters-data/raw/`
+2. **聚合**：`token-matters-data` 的 GitHub Actions 触发（`raw/**` push / 每 6 小时 / 手动），checkout `token-matters` 的 summary 代码运行聚合管道
+3. **发布**：Action 将生成的 summary JSON + badge SVG push 到 `token-matters-summary`，GitHub Pages 自动部署
+4. **展示**：Frontend 从 GitHub Pages 读取聚合 JSON 渲染图表
+
+**组件**：
 
 | 组件 | 说明 |
 |------|------|
 | **Collector** | TypeScript CLI，运行在开发机上，定时采集各 Provider 的 Token 数据 |
-| **Summary** | GitHub Actions 聚合管道，将原始数据汇总为多维度统计 JSON + SVG badge |
+| **Summary** | 聚合管道，将原始数据汇总为多维度统计 JSON + SVG badge |
 | **Frontend** | React SPA，从 GitHub Pages 读取聚合 JSON 渲染图表 |
-
-| 仓库 | 可见性 | 内容 |
-|------|:------:|------|
-| `token-matters-data` | Private | 原始采集数据 + 费用配置 + Actions workflow |
-| `token-matters-summary` | Public | 聚合统计 JSON + SVG badge + GitHub Pages |
 
 ## Supported Providers
 
@@ -40,8 +50,6 @@
 | TRAE Pro (ByteDance) | estimated | 本地日志解析 + Token 估算 |
 
 ## Project Status
-
-> 🚧 设计阶段 — 文档已完成，代码尚未开始
 
 当前进度参见 [`docs/plan.md`](docs/plan.md)。
 
@@ -68,4 +76,4 @@
 
 ## License
 
-Private project — not open source.
+MIT
