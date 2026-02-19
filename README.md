@@ -1,6 +1,6 @@
 # Token Matters
 
-![Token Usage](https://newbdez33.github.io/token-matters-summary/badge/token-usage-pixel.svg)
+![Token Usage](https://newbdez33.github.io/token-matters-summary/badge/token-usage.svg)
 
 个人 AI 产品 Token 消耗统计与可视化工具。追踪你在 Claude Code、GLM Coding、TRAE Pro 等 AI 产品上的 Token 使用量与费用支出。
 
