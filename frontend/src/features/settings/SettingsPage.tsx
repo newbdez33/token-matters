@@ -3,6 +3,7 @@ import { useThemeStore } from '@/stores/useThemeStore';
 import { useDataStore } from '@/stores/useDataStore';
 import { clearCache, getCacheStats } from '@/services/cache';
 import { formatDate } from '@/utils/format';
+import pricing from '@/config/pricing.json';
 
 export function SettingsPage() {
   const { theme, setTheme } = useThemeStore();
@@ -31,6 +32,12 @@ export function SettingsPage() {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  const providers = pricing.providers as Record<string, {
+    type: string;
+    models?: Record<string, Record<string, number | string>>;
+    subscription?: { plan: string; monthlyCost: number; currency: string };
+  }>;
 
   return (
     <div className="space-y-8">
@@ -124,6 +131,80 @@ export function SettingsPage() {
             <p>Daily files: {meta.dailyFiles.length} &middot; Weekly: {meta.weeklyFiles.length} &middot; Monthly: {meta.monthlyFiles.length}</p>
           </div>
         )}
+      </section>
+
+      <hr className="border-border" />
+
+      {/* Pricing */}
+      <section className="space-y-4">
+        <h2 className="text-xs text-muted-foreground uppercase tracking-wider">
+          Pricing
+        </h2>
+        {Object.entries(providers).map(([id, provider]) => (
+          <div key={id} className="space-y-2">
+            <h3 className="text-sm font-medium">{id}</h3>
+            <p className="text-xs text-muted-foreground capitalize">{provider.type} billing</p>
+
+            {provider.type === 'token' && provider.models && (
+              <div className="overflow-x-auto">
+                <table className="text-xs w-full">
+                  <thead>
+                    <tr className="text-muted-foreground text-left">
+                      <th className="py-1 pr-4 font-normal">Model</th>
+                      {Object.values(provider.models).some((m) => 'inputPerMTok' in m) && (
+                        <>
+                          <th className="py-1 px-2 font-normal text-right">Input/MTok</th>
+                          <th className="py-1 px-2 font-normal text-right">Output/MTok</th>
+                          <th className="py-1 px-2 font-normal text-right">Cache Create</th>
+                          <th className="py-1 px-2 font-normal text-right">Cache Read</th>
+                        </>
+                      )}
+                      {Object.values(provider.models).some((m) => 'totalPerKTok' in m) && (
+                        <th className="py-1 px-2 font-normal text-right">Total/KTok</th>
+                      )}
+                      <th className="py-1 pl-2 font-normal text-right">Currency</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(provider.models).map(([model, rates]) => (
+                      <tr key={model} className="border-t border-border">
+                        <td className="py-1 pr-4 font-mono">{model}</td>
+                        {'inputPerMTok' in rates && (
+                          <>
+                            <td className="py-1 px-2 text-right font-mono tabular-nums">${String(rates.inputPerMTok)}</td>
+                            <td className="py-1 px-2 text-right font-mono tabular-nums">${String(rates.outputPerMTok)}</td>
+                            <td className="py-1 px-2 text-right font-mono tabular-nums">${String(rates.cacheCreationPerMTok)}</td>
+                            <td className="py-1 px-2 text-right font-mono tabular-nums">${String(rates.cacheReadPerMTok)}</td>
+                          </>
+                        )}
+                        {'totalPerKTok' in rates && (
+                          <td className="py-1 px-2 text-right font-mono tabular-nums">{String(rates.totalPerKTok)}</td>
+                        )}
+                        <td className="py-1 pl-2 text-right text-muted-foreground">{String(rates.currency)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {provider.type === 'subscription' && provider.subscription && (
+              <p className="text-xs font-mono tabular-nums">
+                {provider.subscription.plan} — {provider.subscription.currency === 'USD' ? '$' : '¥'}
+                {provider.subscription.monthlyCost}/mo
+              </p>
+            )}
+          </div>
+        ))}
+
+        <div className="pt-2">
+          <h3 className="text-xs text-muted-foreground mb-1">Exchange Rates</h3>
+          {Object.entries(pricing.exchangeRates).map(([pair, rate]) => (
+            <p key={pair} className="text-xs font-mono tabular-nums">
+              {pair}: {rate}
+            </p>
+          ))}
+        </div>
       </section>
     </div>
   );

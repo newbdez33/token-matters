@@ -1,0 +1,41 @@
+{
+  "exchangeRates": { "CNY/USD": 0.1389 },
+  "providers": {
+    "claude-code": {
+      "type": "token",
+      "models": {
+        "claude-opus-4-6": {
+          "inputPerMTok": 15,
+          "outputPerMTok": 75,
+          "cacheCreationPerMTok": 18.75,
+          "cacheReadPerMTok": 1.50,
+          "currency": "USD"
+        },
+        "claude-sonnet-4-6": {
+          "inputPerMTok": 3,
+          "outputPerMTok": 15,
+          "cacheCreationPerMTok": 3.75,
+          "cacheReadPerMTok": 0.30,
+          "currency": "USD"
+        },
+        "claude-haiku-4-5": {
+          "inputPerMTok": 0.80,
+          "outputPerMTok": 4,
+          "cacheCreationPerMTok": 1.0,
+          "cacheReadPerMTok": 0.08,
+          "currency": "USD"
+        }
+      }
+    },
+    "glm-coding": {
+      "type": "token",
+      "models": {
+        "_default": { "totalPerKTok": 0.05, "currency": "CNY" }
+      }
+    },
+    "trae-pro": {
+      "type": "subscription",
+      "subscription": { "plan": "Pro", "monthlyCost": 10, "currency": "USD" }
+    }
+  }
+}

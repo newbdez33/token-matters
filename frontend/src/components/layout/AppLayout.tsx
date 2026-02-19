@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import dayjs from 'dayjs';
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Dashboard' },
+  { path: '/', label: 'Token Usage' },
   { path: '/analytics', label: 'Analytics' },
 ];
 
@@ -17,7 +17,7 @@ export function AppLayout() {
         <div className="mx-auto max-w-4xl px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-4 sm:gap-8">
             <Link to="/" className="text-base sm:text-lg font-light tracking-tight text-foreground no-underline">
-              Jacky's Token Usage
+              Jacky
             </Link>
             <nav className="flex items-center gap-3 sm:gap-6">
               {NAV_ITEMS.map((item) => (

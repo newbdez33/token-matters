@@ -4,6 +4,7 @@ import { useFilterStore } from '@/stores/useFilterStore';
 import { formatCost, formatNumber, formatDate } from '@/utils/format';
 import { TrendBarChart } from '@/components/charts/TrendBarChart';
 import { ProviderBreakdownTable } from '@/components/charts/ProviderBreakdownTable';
+import { ModelBreakdownTable } from '@/components/charts/ModelBreakdownTable';
 import { LoadingSkeleton, LoadingBlock } from '@/components/shared/LoadingSkeleton';
 import { ErrorMessage } from '@/components/shared/ErrorMessage';
 
@@ -92,7 +93,7 @@ export function DashboardPage() {
             ))}
           </div>
         </div>
-        <TrendBarChart data={trendData} />
+        <TrendBarChart data={trendData} dataKey="totalTokens" />
       </section>
 
       <hr className="border-border" />
@@ -121,6 +122,19 @@ export function DashboardPage() {
           <p className="text-sm text-muted-foreground">No data for today yet.</p>
         )}
       </section>
+
+      {/* Models Today */}
+      {today?.byModel && today.byModel.length > 0 && (
+        <>
+          <hr className="border-border" />
+          <section>
+            <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+              Models Today
+            </h2>
+            <ModelBreakdownTable models={today.byModel} />
+          </section>
+        </>
+      )}
 
       {/* Last Updated */}
       <p className="text-[10px] text-muted-foreground pt-4">

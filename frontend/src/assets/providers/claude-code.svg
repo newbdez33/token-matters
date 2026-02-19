@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-  <path d="M16.5 3.5L12 8l-4.5-4.5M12 8v8M7.5 20.5L12 16l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="12" cy="12" r="2" fill="currentColor"/>
+  <!-- Anthropic burst mark -->
+  <path d="M15.04 4H17.14L11.57 20H9.47L15.04 4Z" fill="currentColor"/>
+  <path d="M8.96 4L3.39 20H5.49L11.06 4H8.96Z" fill="currentColor"/>
+  <path d="M13.5 12L20.61 20H18.1L12.24 13.3L13.5 12Z" fill="currentColor"/>
 </svg>

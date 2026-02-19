@@ -89,7 +89,7 @@ export function ProviderPage() {
         <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
           Daily Trend
         </h2>
-        <TrendBarChart data={dailyTrend} />
+        <TrendBarChart data={dailyTrend} dataKey="totalTokens" />
       </section>
 
       <hr className="border-border" />
