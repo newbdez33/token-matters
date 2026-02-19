@@ -96,8 +96,8 @@ function renderPixel(label: string, value: string): string {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="22" role="img" aria-label="${label}: ${value}">
   <title>${label}: ${value}</title>
-  <rect width="${totalWidth}" height="22" fill="#111" stroke="#0f0" stroke-width="1"/>
-  <g font-family="'Consolas','Monaco','Courier New',monospace" font-size="12" fill="#0f0">
+  <rect x="0.5" y="0.5" width="${totalWidth - 1}" height="21" fill="#fff" stroke="#000" stroke-width="1"/>
+  <g font-family="'Consolas','Monaco','Courier New',monospace" font-size="12" fill="#000">
     <text x="${padding / 2}" y="15">${label}</text>
     <text x="${labelWidth + gap}" y="15">${value}</text>
   </g>
@@ -116,13 +116,11 @@ export function generateBadge(data: BadgeData, options?: Partial<BadgeOptions>):
   return renderFlat(label, value);
 }
 
-export function generateBadges(
-  data: BadgeData,
-  items?: BadgeItem[],
-): Record<string, string> {
-  const resolvedItems = items ?? ['tokens'];
+export function generateBadges(data: BadgeData): Record<string, string> {
   return {
-    'token-usage.svg': generateBadge(data, { theme: 'flat', items: resolvedItems }),
-    'token-usage-pixel.svg': generateBadge(data, { theme: 'pixel', items: resolvedItems }),
+    'token-usage.svg': generateBadge(data, { theme: 'flat', items: ['tokens'] }),
+    'token-usage-pixel.svg': generateBadge(data, { theme: 'pixel', items: ['tokens'] }),
+    'token-usage-cost.svg': generateBadge(data, { theme: 'flat', items: ['tokens', 'cost'] }),
+    'token-usage-cost-pixel.svg': generateBadge(data, { theme: 'pixel', items: ['tokens', 'cost'] }),
   };
 }

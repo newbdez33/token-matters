@@ -70,8 +70,9 @@ describe('generateBadge', () => {
   it('generates pixel SVG', () => {
     const svg = generateBadge(sampleData, { theme: 'pixel' });
     expect(svg).toContain('<svg');
-    expect(svg).toContain('fill="#111"');
-    expect(svg).toContain('stroke="#0f0"');
+    expect(svg).toContain('fill="#fff"');
+    expect(svg).toContain('stroke="#000"');
+    expect(svg).toContain('fill="#000"');
     expect(svg).toContain('Consolas');
     expect(svg).toContain('479.4M');
     // no gradients in pixel
@@ -111,24 +112,37 @@ describe('generateBadge', () => {
 });
 
 describe('generateBadges', () => {
-  it('returns both flat and pixel badges', () => {
+  it('returns all 4 badge files', () => {
     const result = generateBadges(sampleData);
-    expect(Object.keys(result)).toEqual(['token-usage.svg', 'token-usage-pixel.svg']);
-    expect(result['token-usage.svg']).toContain('linearGradient');
-    expect(result['token-usage-pixel.svg']).toContain('fill="#111"');
+    expect(Object.keys(result).sort()).toEqual([
+      'token-usage-cost-pixel.svg',
+      'token-usage-cost.svg',
+      'token-usage-pixel.svg',
+      'token-usage.svg',
+    ]);
   });
 
-  it('both badges show the same data', () => {
-    const result = generateBadges(sampleData, ['tokens', 'cost']);
-    expect(result['token-usage.svg']).toContain('479.4M');
-    expect(result['token-usage.svg']).toContain('$1,717.56');
-    expect(result['token-usage-pixel.svg']).toContain('479.4M');
-    expect(result['token-usage-pixel.svg']).toContain('$1,717.56');
-  });
-
-  it('defaults to tokens only', () => {
+  it('token-only badges have no cost', () => {
     const result = generateBadges(sampleData);
     expect(result['token-usage.svg']).toContain('479.4M');
     expect(result['token-usage.svg']).not.toContain('$');
+    expect(result['token-usage-pixel.svg']).toContain('479.4M');
+    expect(result['token-usage-pixel.svg']).not.toContain('$');
+  });
+
+  it('cost badges include both tokens and cost', () => {
+    const result = generateBadges(sampleData);
+    expect(result['token-usage-cost.svg']).toContain('479.4M');
+    expect(result['token-usage-cost.svg']).toContain('$1,717.56');
+    expect(result['token-usage-cost-pixel.svg']).toContain('479.4M');
+    expect(result['token-usage-cost-pixel.svg']).toContain('$1,717.56');
+  });
+
+  it('flat badges use gradients, pixel badges do not', () => {
+    const result = generateBadges(sampleData);
+    expect(result['token-usage.svg']).toContain('linearGradient');
+    expect(result['token-usage-cost.svg']).toContain('linearGradient');
+    expect(result['token-usage-pixel.svg']).not.toContain('linearGradient');
+    expect(result['token-usage-cost-pixel.svg']).not.toContain('linearGradient');
   });
 });

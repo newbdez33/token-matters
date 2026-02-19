@@ -117,7 +117,7 @@ describe('full pipeline integration', () => {
     expect(meta.providers).toContain('trae-pro');
     expect(meta.dailyFiles).toHaveLength(3);
 
-    // Badges
+    // Badges — 4 files
     const flatBadge = await fs.readFile(
       path.join(badgeDir, 'token-usage.svg'),
       'utf-8',
@@ -125,6 +125,7 @@ describe('full pipeline integration', () => {
     expect(flatBadge).toContain('<svg');
     expect(flatBadge).toContain('Token Usage (7d)');
     expect(flatBadge).toContain('linearGradient');
+    expect(flatBadge).not.toContain('$');
 
     const pixelBadge = await fs.readFile(
       path.join(badgeDir, 'token-usage-pixel.svg'),
@@ -132,7 +133,22 @@ describe('full pipeline integration', () => {
     );
     expect(pixelBadge).toContain('<svg');
     expect(pixelBadge).toContain('Token Usage (7d)');
-    expect(pixelBadge).toContain('fill="#111"');
+    expect(pixelBadge).toContain('fill="#fff"');
+    expect(pixelBadge).not.toContain('$');
+
+    const flatCostBadge = await fs.readFile(
+      path.join(badgeDir, 'token-usage-cost.svg'),
+      'utf-8',
+    );
+    expect(flatCostBadge).toContain('Token Usage (7d)');
+    expect(flatCostBadge).toContain('$');
+
+    const pixelCostBadge = await fs.readFile(
+      path.join(badgeDir, 'token-usage-cost-pixel.svg'),
+      'utf-8',
+    );
+    expect(pixelCostBadge).toContain('Token Usage (7d)');
+    expect(pixelCostBadge).toContain('$');
   });
 
   it('deduplicates correctly - 2026-02-17 has newer data', async () => {

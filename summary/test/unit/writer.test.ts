@@ -135,6 +135,8 @@ function makeInput(): WriteInput {
     badgeSvgs: {
       'token-usage.svg': '<svg>flat</svg>',
       'token-usage-pixel.svg': '<svg>pixel</svg>',
+      'token-usage-cost.svg': '<svg>flat-cost</svg>',
+      'token-usage-cost-pixel.svg': '<svg>pixel-cost</svg>',
     },
   };
 }
@@ -198,6 +200,18 @@ describe('writeAllOutputs', () => {
       'utf-8',
     );
     expect(pixelBadge).toContain('<svg>pixel</svg>');
+
+    const flatCostBadge = await fs.readFile(
+      path.join(badgeDir, 'token-usage-cost.svg'),
+      'utf-8',
+    );
+    expect(flatCostBadge).toContain('<svg>flat-cost</svg>');
+
+    const pixelCostBadge = await fs.readFile(
+      path.join(badgeDir, 'token-usage-cost-pixel.svg'),
+      'utf-8',
+    );
+    expect(pixelCostBadge).toContain('<svg>pixel-cost</svg>');
   });
 
   it('creates directories as needed', async () => {
