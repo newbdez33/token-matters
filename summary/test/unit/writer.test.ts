@@ -132,7 +132,10 @@ function makeInput(): WriteInput {
     machines,
     latest,
     meta,
-    badgeSvg: '<svg>test</svg>',
+    badgeSvgs: {
+      'token-usage.svg': '<svg>flat</svg>',
+      'token-usage-pixel.svg': '<svg>pixel</svg>',
+    },
   };
 }
 
@@ -184,11 +187,17 @@ describe('writeAllOutputs', () => {
     );
     expect(JSON.parse(metaFile).providers).toContain('claude-code');
 
-    const badge = await fs.readFile(
+    const flatBadge = await fs.readFile(
       path.join(badgeDir, 'token-usage.svg'),
       'utf-8',
     );
-    expect(badge).toContain('<svg');
+    expect(flatBadge).toContain('<svg>flat</svg>');
+
+    const pixelBadge = await fs.readFile(
+      path.join(badgeDir, 'token-usage-pixel.svg'),
+      'utf-8',
+    );
+    expect(pixelBadge).toContain('<svg>pixel</svg>');
   });
 
   it('creates directories as needed', async () => {

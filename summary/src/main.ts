@@ -10,7 +10,7 @@ import {
   buildLatestSummary,
 } from './aggregator.js';
 import { buildMeta } from './meta.js';
-import { generateBadge } from './badge.js';
+import { generateBadges } from './badge.js';
 import { writeAllOutputs } from './writer.js';
 
 export interface CLIArgs {
@@ -91,15 +91,16 @@ export async function run(args: CLIArgs): Promise<void> {
   // 6. Build meta
   const meta = buildMeta(daily, weekly, monthly);
 
-  // 7. Generate badge
-  const badgeSvg = generateBadge(
-    latest.last7Days.totals.totalTokens,
-    latest.last7Days.totals.cost.totalUSD,
-  );
+  // 7. Generate badges
+  const badgeSvgs = generateBadges({
+    tokens: latest.last7Days.totals.totalTokens,
+    costUSD: latest.last7Days.totals.cost.totalUSD,
+    dateRange: latest.last7Days.dateRange,
+  });
 
   // 8. Write outputs
   const fileCount = await writeAllOutputs(
-    { daily, weekly, monthly, providers, machines, latest, meta, badgeSvg },
+    { daily, weekly, monthly, providers, machines, latest, meta, badgeSvgs },
     args.outputDir,
     args.badgeDir,
     args.dryRun,

@@ -117,13 +117,22 @@ describe('full pipeline integration', () => {
     expect(meta.providers).toContain('trae-pro');
     expect(meta.dailyFiles).toHaveLength(3);
 
-    // Badge
-    const badge = await fs.readFile(
+    // Badges
+    const flatBadge = await fs.readFile(
       path.join(badgeDir, 'token-usage.svg'),
       'utf-8',
     );
-    expect(badge).toContain('<svg');
-    expect(badge).toContain('Token Usage (7d)');
+    expect(flatBadge).toContain('<svg');
+    expect(flatBadge).toContain('Token Usage (7d)');
+    expect(flatBadge).toContain('linearGradient');
+
+    const pixelBadge = await fs.readFile(
+      path.join(badgeDir, 'token-usage-pixel.svg'),
+      'utf-8',
+    );
+    expect(pixelBadge).toContain('<svg');
+    expect(pixelBadge).toContain('Token Usage (7d)');
+    expect(pixelBadge).toContain('fill="#111"');
   });
 
   it('deduplicates correctly - 2026-02-17 has newer data', async () => {

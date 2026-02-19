@@ -18,7 +18,7 @@ export interface WriteInput {
   machines: Map<string, MachineAllTime>;
   latest: LatestSummary;
   meta: SummaryMeta;
-  badgeSvg: string;
+  badgeSvgs: Record<string, string>;
 }
 
 async function writeJSON(filePath: string, data: unknown): Promise<void> {
@@ -79,10 +79,12 @@ export async function writeAllOutputs(
     content: JSON.stringify(input.meta, null, 2) + '\n',
   });
 
-  files.push({
-    path: path.join(badgeDir, 'token-usage.svg'),
-    content: input.badgeSvg,
-  });
+  for (const [filename, svg] of Object.entries(input.badgeSvgs)) {
+    files.push({
+      path: path.join(badgeDir, filename),
+      content: svg,
+    });
+  }
 
   if (dryRun) return files.length;
 
