@@ -42,8 +42,52 @@
 | Provider | 计费模式 | 数据精度 | 采集方式 |
 |----------|:--------:|:--------:|---------|
 | Claude Code (Anthropic) | Token | exact | 本地 JSONL 解析 |
+| Codex CLI (OpenAI) | Token | exact | 本地 JSONL 解析 |
+| OpenCode | Token | exact | 本地 SQLite 查询 |
 | GLM Coding (智谱 AI) | Subscription | partial | 监控 API |
 | TRAE Pro (ByteDance) | Subscription | estimated | 本地日志解析 + Token 估算 |
+
+## Collector Configuration
+
+配置文件路径：`~/.token-matters/config.yaml`
+
+```yaml
+dataRepo: ~/projects/token-matters-data
+timezone: Asia/Shanghai
+
+providers:
+  claude-code:
+    enabled: true
+    claudeDir: ~/.claude          # 可选，默认 ~/.claude
+
+  codex:
+    enabled: true
+    codexDir: ~/.codex            # 可选，默认 ~/.codex（或 $CODEX_HOME）
+
+  opencode:
+    enabled: true
+    openCodeDir: ~/.local/share/opencode  # 可选，默认 $XDG_DATA_HOME/opencode
+
+  glm-coding:
+    enabled: true
+    apiKey: your-api-key
+    baseUrl: https://open.bigmodel.cn     # 可选
+
+  trae-pro:
+    enabled: true
+    traeDir: ~/Library/Application Support/Trae  # 可选，按平台自动检测
+```
+
+每个 provider 设置 `enabled: false` 即可关闭。未在配置中出现的 provider 默认开启。
+
+```bash
+cd collector
+pnpm collect --status       # 查看各 provider 状态
+pnpm collect                # 采集今天的数据
+pnpm collect --date 2026-02-20          # 采集指定日期
+pnpm collect --from 2026-02-01 --to 2026-02-20  # 采集日期范围
+pnpm collect --dry-run      # 预览，不实际写入
+```
 
 ## Frontend
 

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { homedir, hostname } from 'node:os';
+import { hostname } from 'node:os';
 import { parse as parseYaml } from 'yaml';
+import { expandHome } from './utils/paths.js';
 import type { CollectorConfig } from './providers/types.js';
 
 function deriveMachineName(): string {
@@ -9,13 +10,6 @@ function deriveMachineName(): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-}
-
-function expandHome(p: string): string {
-  if (p.startsWith('~/')) {
-    return homedir() + p.slice(1);
-  }
-  return p;
 }
 
 export function loadConfig(configPath: string): CollectorConfig {

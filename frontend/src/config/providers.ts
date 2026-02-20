@@ -1,5 +1,7 @@
 import claudeCodeLogo from '@/assets/providers/claude-code.svg';
+import codexLogo from '@/assets/providers/codex.svg';
 import glmCodingLogo from '@/assets/providers/glm-coding.svg';
+import opencodeLogo from '@/assets/providers/opencode.svg';
 import traeProLogo from '@/assets/providers/trae-pro.svg';
 
 export interface ProviderConfig {
@@ -22,6 +24,15 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     logo: claudeCodeLogo,
     note: 'Anthropic CLI - per token billing',
   },
+  'codex': {
+    id: 'codex',
+    name: 'Codex CLI',
+    billingMode: 'token',
+    currency: 'USD',
+    color: '#202020',
+    logo: codexLogo,
+    note: 'OpenAI Codex CLI - per token billing',
+  },
   'glm-coding': {
     id: 'glm-coding',
     name: 'GLM Coding Plan',
@@ -30,6 +41,15 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     color: '#808080',
     logo: glmCodingLogo,
     note: 'Zhipu AI coding assistant - subscription',
+  },
+  'opencode': {
+    id: 'opencode',
+    name: 'OpenCode',
+    billingMode: 'token',
+    currency: 'USD',
+    color: '#606060',
+    logo: opencodeLogo,
+    note: 'OpenCode terminal AI - per token billing',
   },
   'trae-pro': {
     id: 'trae-pro',

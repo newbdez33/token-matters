@@ -27,10 +27,57 @@
         }
       }
     },
+    "codex": {
+      "type": "token",
+      "models": {
+        "o4-mini": {
+          "inputPerMTok": 1.10,
+          "outputPerMTok": 4.40,
+          "cacheReadPerMTok": 0.275,
+          "currency": "USD"
+        },
+        "codex-mini-latest": {
+          "inputPerMTok": 1.10,
+          "outputPerMTok": 4.40,
+          "cacheReadPerMTok": 0.275,
+          "currency": "USD"
+        },
+        "o3": {
+          "inputPerMTok": 2.00,
+          "outputPerMTok": 8.00,
+          "cacheReadPerMTok": 0.50,
+          "currency": "USD"
+        }
+      }
+    },
     "glm-coding": {
       "type": "token",
       "models": {
         "_default": { "totalPerKTok": 0.05, "currency": "CNY" }
+      }
+    },
+    "opencode": {
+      "type": "token",
+      "models": {
+        "claude-sonnet-4-6": {
+          "inputPerMTok": 3,
+          "outputPerMTok": 15,
+          "cacheCreationPerMTok": 3.75,
+          "cacheReadPerMTok": 0.30,
+          "currency": "USD"
+        },
+        "gpt-4.1": {
+          "inputPerMTok": 2.00,
+          "outputPerMTok": 8.00,
+          "cacheReadPerMTok": 0.50,
+          "currency": "USD"
+        },
+        "o4-mini": {
+          "inputPerMTok": 1.10,
+          "outputPerMTok": 4.40,
+          "cacheReadPerMTok": 0.275,
+          "currency": "USD"
+        }
       }
     },
     "trae-pro": {

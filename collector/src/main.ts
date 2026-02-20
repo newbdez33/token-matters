@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { isValidDate, getDateRange, todayInTimezone } from './utils/date.js';
+import { defaultClaudeDir, defaultTraeDir, defaultCodexDir, defaultOpenCodeDir, expandHome } from './utils/paths.js';
 import * as logger from './utils/logger.js';
 import { loadConfig } from './config.js';
 import { loadState, saveState } from './state.js';
@@ -9,6 +10,8 @@ import { writeRawDataFile } from './writer.js';
 import { createClaudeCodeProvider } from './providers/claude-code.js';
 import { createGlmCodingProvider } from './providers/glm-coding.js';
 import { createTraeProProvider } from './providers/trae-pro.js';
+import { createCodexProvider } from './providers/codex.js';
+import { createOpenCodeProvider } from './providers/opencode.js';
 import type { CollectorProvider } from './providers/types.js';
 
 export interface CliArgs {
@@ -69,41 +72,86 @@ export function parseArgs(argv: string[]): CliArgs {
   return args;
 }
 
-function buildProviders(config: ReturnType<typeof loadConfig>): CollectorProvider[] {
-  const providers: CollectorProvider[] = [];
+interface BuiltProvider {
+  provider: CollectorProvider;
+  resolvedPath: string;
+}
+
+export function buildProviders(config: ReturnType<typeof loadConfig>): BuiltProvider[] {
+  const providers: BuiltProvider[] = [];
 
   const claudeCodeCfg = config.providers['claude-code'];
   if (claudeCodeCfg?.enabled !== false) {
     const claudeDir = typeof claudeCodeCfg?.claudeDir === 'string'
-      ? claudeCodeCfg.claudeDir.replace(/^~/, homedir())
-      : join(homedir(), '.claude');
-    providers.push(createClaudeCodeProvider({
-      claudeDir,
-      machine: config.machine,
-      timezone: config.timezone,
-    }));
+      ? expandHome(claudeCodeCfg.claudeDir)
+      : defaultClaudeDir();
+    providers.push({
+      provider: createClaudeCodeProvider({
+        claudeDir,
+        machine: config.machine,
+        timezone: config.timezone,
+      }),
+      resolvedPath: join(claudeDir, 'projects'),
+    });
   }
 
   const glmCodingCfg = config.providers['glm-coding'];
   if (glmCodingCfg?.enabled !== false && glmCodingCfg?.apiKey) {
-    providers.push(createGlmCodingProvider({
-      apiKey: glmCodingCfg.apiKey as string,
-      baseUrl: (glmCodingCfg.baseUrl as string) ?? 'https://open.bigmodel.cn',
-      machine: config.machine,
-      timezone: config.timezone,
-    }));
+    const baseUrl = (glmCodingCfg.baseUrl as string) ?? 'https://open.bigmodel.cn';
+    providers.push({
+      provider: createGlmCodingProvider({
+        apiKey: glmCodingCfg.apiKey as string,
+        baseUrl,
+        machine: config.machine,
+        timezone: config.timezone,
+      }),
+      resolvedPath: baseUrl,
+    });
   }
 
   const traeProCfg = config.providers['trae-pro'];
   if (traeProCfg?.enabled !== false) {
     const traeDir = typeof traeProCfg?.traeDir === 'string'
-      ? traeProCfg.traeDir.replace(/^~/, homedir())
-      : join(homedir(), 'Library/Application Support/Trae');
-    providers.push(createTraeProProvider({
-      traeDir,
-      machine: config.machine,
-      timezone: config.timezone,
-    }));
+      ? expandHome(traeProCfg.traeDir)
+      : defaultTraeDir();
+    providers.push({
+      provider: createTraeProProvider({
+        traeDir,
+        machine: config.machine,
+        timezone: config.timezone,
+      }),
+      resolvedPath: join(traeDir, 'logs'),
+    });
+  }
+
+  const codexCfg = config.providers['codex'];
+  if (codexCfg?.enabled !== false) {
+    const codexDir = typeof codexCfg?.codexDir === 'string'
+      ? expandHome(codexCfg.codexDir)
+      : defaultCodexDir();
+    providers.push({
+      provider: createCodexProvider({
+        codexDir,
+        machine: config.machine,
+        timezone: config.timezone,
+      }),
+      resolvedPath: join(codexDir, 'sessions'),
+    });
+  }
+
+  const openCodeCfg = config.providers['opencode'];
+  if (openCodeCfg?.enabled !== false) {
+    const openCodeDir = typeof openCodeCfg?.openCodeDir === 'string'
+      ? expandHome(openCodeCfg.openCodeDir)
+      : defaultOpenCodeDir();
+    providers.push({
+      provider: createOpenCodeProvider({
+        openCodeDir,
+        machine: config.machine,
+        timezone: config.timezone,
+      }),
+      resolvedPath: join(openCodeDir, 'opencode.db'),
+    });
   }
 
   return providers;
@@ -127,13 +175,13 @@ async function main() {
 
   // Status mode
   if (args.status) {
-    const providers = buildProviders(config);
+    const built = buildProviders(config);
     logger.info(`Machine: ${config.machine}`);
     logger.info(`Data repo: ${config.dataRepo}`);
     logger.info(`Timezone: ${config.timezone}`);
-    for (const p of providers) {
-      const available = await p.isAvailable();
-      logger.info(`Provider ${p.name}: ${available ? 'available' : 'unavailable'}`);
+    for (const { provider, resolvedPath } of built) {
+      const available = await provider.isAvailable();
+      logger.info(`Provider ${provider.name}: ${available ? 'available' : 'unavailable'} (${resolvedPath})`);
     }
     return;
   }
@@ -153,10 +201,10 @@ async function main() {
   const state = loadState(statePath);
 
   // Build providers
-  let providers = buildProviders(config);
+  let built = buildProviders(config);
   if (args.provider) {
-    providers = providers.filter(p => p.name === args.provider);
-    if (providers.length === 0) {
+    built = built.filter(b => b.provider.name === args.provider);
+    if (built.length === 0) {
       logger.error(`Provider not found: ${args.provider}`);
       process.exit(1);
     }
@@ -172,10 +220,16 @@ async function main() {
   // Collect
   const writtenFiles: string[] = [];
 
-  for (const provider of providers) {
+  for (const { provider, resolvedPath } of built) {
     const available = await provider.isAvailable();
     if (!available) {
-      logger.warn(`Skipping ${provider.name}: data source not available`);
+      logger.warn(`Skipping ${provider.name}: data source not found at ${resolvedPath}`);
+      const configHint = provider.name === 'claude-code' ? 'claudeDir'
+        : provider.name === 'trae-pro' ? 'traeDir'
+        : provider.name === 'codex' ? 'codexDir'
+        : provider.name === 'opencode' ? 'openCodeDir'
+        : provider.name;
+      logger.warn(`  Configure "${configHint}" in ~/.token-matters/config.yaml to set the correct path`);
       continue;
     }
 

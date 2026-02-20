@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- OpenAI Codex CLI — terminal prompt icon -->
+  <path d="M4 6h16v12H4V6zm2 2v8h12V8H6z" fill="currentColor"/>
+  <path d="M8 12l2-2 1 1-1.5 1.5L11 14l-1 1-2-2z" fill="currentColor"/>
+  <path d="M12 14h3v1h-3v-1z" fill="currentColor"/>
+</svg>

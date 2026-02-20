@@ -1,0 +1,9 @@
+{"type":"turn_start","turn_context":{"model":"o4-mini"},"timestamp":"2026-02-20T10:00:00.000Z"}
+{"type":"event","payload":{"type":"user_message"},"timestamp":"2026-02-20T10:00:01.000Z"}
+{"type":"event","payload":{"type":"token_count","input_tokens":100,"output_tokens":50,"cached_input_tokens":20,"reasoning_output_tokens":10},"timestamp":"2026-02-20T10:01:00.000Z"}
+{"type":"turn_start","turn_context":{"model":"o4-mini"},"timestamp":"2026-02-20T11:00:00.000Z"}
+{"type":"event","payload":{"type":"token_count","input_tokens":350,"output_tokens":150,"cached_input_tokens":40,"reasoning_output_tokens":25},"timestamp":"2026-02-20T11:01:00.000Z"}
+{"type":"turn_start","turn_context":{"model":"codex-mini-latest"},"timestamp":"2026-02-20T14:00:00.000Z"}
+{"type":"event","payload":{"type":"token_count","input_tokens":500,"output_tokens":250,"cached_input_tokens":50,"reasoning_output_tokens":30},"timestamp":"2026-02-20T14:01:00.000Z"}
+this is a malformed line that should be skipped
+{"type":"event","payload":{"type":"other_event"},"timestamp":"2026-02-20T15:00:00.000Z"}
