@@ -97,22 +97,28 @@ export function parseSessionFile(
       continue;
     }
 
-    // Track model from turn events
-    const turnContext = obj.turn_context as Record<string, unknown> | undefined;
-    if (turnContext?.model) {
-      currentModel = turnContext.model as string;
+    const payload = obj.payload as Record<string, unknown> | undefined;
+
+    // Track model from turn_context events
+    if (obj.type === 'turn_context' && payload?.model) {
+      currentModel = payload.model as string;
     }
 
     // Process token_count events
-    const payload = obj.payload as Record<string, unknown> | undefined;
     if (payload?.type !== 'token_count') continue;
 
     const timestamp = obj.timestamp as string | undefined;
     if (!timestamp) continue;
 
-    const cumInput = (payload.input_tokens as number) ?? 0;
-    const cumOutput = (payload.output_tokens as number) ?? 0;
-    const cumCached = (payload.cached_input_tokens as number) ?? 0;
+    // Token data is nested under payload.info.total_token_usage
+    const info = payload.info as Record<string, unknown> | null | undefined;
+    if (!info) continue;
+    const usage = info.total_token_usage as Record<string, number> | undefined;
+    if (!usage) continue;
+
+    const cumInput = usage.input_tokens ?? 0;
+    const cumOutput = usage.output_tokens ?? 0;
+    const cumCached = usage.cached_input_tokens ?? 0;
 
     // Compute deltas from previous cumulative values
     const deltaInput = cumInput - prevInput;
@@ -168,7 +174,7 @@ export function aggregateByDate(
     m.inputTokens += r.inputTokens;
     m.outputTokens += r.outputTokens;
     m.cachedInputTokens += r.cachedInputTokens;
-    m.totalTokens += r.inputTokens + r.outputTokens + r.cachedInputTokens;
+    m.totalTokens += r.inputTokens + r.outputTokens;
     m.requests += 1;
   }
 

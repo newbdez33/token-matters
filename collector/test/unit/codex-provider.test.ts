@@ -54,14 +54,14 @@ describe('CodexProvider', () => {
     expect(o4.inputTokens).toBe(350);
     expect(o4.outputTokens).toBe(150);
     expect(o4.cacheReadTokens).toBe(40);
-    expect(o4.totalTokens).toBe(540);
+    expect(o4.totalTokens).toBe(500);
     expect(o4.requests).toBe(2);
 
     const codex = result.records.find(r => r.model === 'codex-mini-latest')!;
     expect(codex.inputTokens).toBe(150);
     expect(codex.outputTokens).toBe(100);
     expect(codex.cacheReadTokens).toBe(10);
-    expect(codex.totalTokens).toBe(260);
+    expect(codex.totalTokens).toBe(250);
     expect(codex.requests).toBe(1);
   });
 

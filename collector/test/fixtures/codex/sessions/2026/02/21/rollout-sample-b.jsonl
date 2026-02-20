@@ -1,2 +1,2 @@
-{"type":"turn_start","turn_context":{"model":"o4-mini"},"timestamp":"2026-02-21T09:00:00.000Z"}
-{"type":"event","payload":{"type":"token_count","input_tokens":200,"output_tokens":80,"cached_input_tokens":30,"reasoning_output_tokens":15},"timestamp":"2026-02-21T09:01:00.000Z"}
+{"timestamp":"2026-02-21T09:00:00.000Z","type":"turn_context","payload":{"model":"o4-mini"}}
+{"timestamp":"2026-02-21T09:01:00.000Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":200,"cached_input_tokens":30,"output_tokens":80,"reasoning_output_tokens":15,"total_tokens":280}}}}

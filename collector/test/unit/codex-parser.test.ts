@@ -72,7 +72,13 @@ describe('parseSessionFile', () => {
     expect(records[2].cachedInputTokens).toBe(10);
   });
 
-  it('tracks model from turn_context.model', () => {
+  it('skips token_count events with null info', () => {
+    // sampleA has a token_count with info:null — should produce no record
+    const records = parseSessionFile(sampleA, 'UTC');
+    expect(records.length).toBe(3); // only 3 token_count events with actual data
+  });
+
+  it('tracks model from turn_context events', () => {
     const records = parseSessionFile(sampleA, 'UTC');
     expect(records[0].model).toBe('o4-mini');
     expect(records[1].model).toBe('o4-mini');
@@ -141,7 +147,7 @@ describe('aggregateByDate', () => {
     expect(o4.inputTokens).toBe(350);
     expect(o4.outputTokens).toBe(150);
     expect(o4.cachedInputTokens).toBe(40);
-    expect(o4.totalTokens).toBe(540); // 350+150+40
+    expect(o4.totalTokens).toBe(500); // 350+150 (cached is subset, not additive)
     expect(o4.requests).toBe(2);
 
     // codex-mini-latest: turn3(150,100,10) = (150,100,10)
@@ -149,7 +155,7 @@ describe('aggregateByDate', () => {
     expect(codex.inputTokens).toBe(150);
     expect(codex.outputTokens).toBe(100);
     expect(codex.cachedInputTokens).toBe(10);
-    expect(codex.totalTokens).toBe(260); // 150+100+10
+    expect(codex.totalTokens).toBe(250); // 150+100 (cached is subset, not additive)
     expect(codex.requests).toBe(1);
   });
 
