@@ -165,6 +165,7 @@ Doctor & Init    上传模式
 - [ ] 多机器实测：在第二台开发机运行 Collector，验证双机并行
 - [x] 历史数据回填：`--from --to` 参数已在 Collector Phase 1 实现
 - [ ] 费用定价配置：支持在 Frontend 中查看/编辑 pricing.json
+- [ ] 将 `pricing.json` 从 `token-matters-data`（私有）移至 `token-matters/summary/`（公开），并更新 `token-matters-data` 的 workflow 路径（`--pricing ./token-matters/summary/pricing.json`）
 - [x] 数据精度标注优化：exact / estimated / partial 差异化展示（图标 + 边框样式 + tooltip 说明）
 - [x] 深色/浅色主题：chart 颜色随主题切换，CSS 变量驱动，logo dark:invert
 - [x] 响应式布局：mobile / desktop 全适配（padding、grid、table 均有断点）
