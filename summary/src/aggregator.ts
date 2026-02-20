@@ -88,6 +88,27 @@ function mergeProviderSummaries(
   return Array.from(map.values());
 }
 
+function mergeMachineSummaries(
+  lists: MachineSummary[][],
+): MachineSummary[] {
+  const map = new Map<string, MachineSummary>();
+  for (const list of lists) {
+    for (const ms of list) {
+      const existing = map.get(ms.machine);
+      if (existing) {
+        map.set(ms.machine, {
+          machine: ms.machine,
+          totalTokens: existing.totalTokens + ms.totalTokens,
+          requests: existing.requests + ms.requests,
+        });
+      } else {
+        map.set(ms.machine, { ...ms });
+      }
+    }
+  }
+  return Array.from(map.values());
+}
+
 // ── daily ──
 
 export function buildDailySummaries(
@@ -468,15 +489,18 @@ function buildPeriodSummary(
 function aggregateDays(days: DailySummary[]): {
   totals: TokenTotals;
   byProvider: ProviderSummary[];
+  byMachine: MachineSummary[];
   dailyTrend: DailyTrendEntry[];
 } {
   let totals = emptyTotals();
   const providerLists: ProviderSummary[][] = [];
+  const machineLists: MachineSummary[][] = [];
   const trend: DailyTrendEntry[] = [];
 
   for (const ds of days) {
     totals = addTotals(totals, ds.totals);
     providerLists.push(ds.byProvider);
+    machineLists.push(ds.byMachine);
     trend.push({
       date: ds.date,
       totalTokens: ds.totals.totalTokens,
@@ -487,6 +511,7 @@ function aggregateDays(days: DailySummary[]): {
   return {
     totals,
     byProvider: mergeProviderSummaries(providerLists),
+    byMachine: mergeMachineSummaries(machineLists),
     dailyTrend: trend,
   };
 }

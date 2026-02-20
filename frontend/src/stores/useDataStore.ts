@@ -6,6 +6,7 @@ import type {
   WeeklySummary,
   MonthlySummary,
   ProviderAllTime,
+  MachineAllTime,
 } from '@/types/summary';
 import { api } from '@/services/api';
 import { fetchWithCache } from '@/services/cache';
@@ -17,6 +18,7 @@ interface DataStore {
   weeklyCache: Record<string, WeeklySummary>;
   monthlyCache: Record<string, MonthlySummary>;
   providerCache: Record<string, ProviderAllTime>;
+  machineCache: Record<string, MachineAllTime>;
   isLoading: boolean;
   error: string | null;
 
@@ -25,6 +27,7 @@ interface DataStore {
   fetchWeekly: (week: string) => Promise<WeeklySummary>;
   fetchMonthly: (month: string) => Promise<MonthlySummary>;
   fetchProvider: (id: string) => Promise<ProviderAllTime>;
+  fetchMachine: (id: string) => Promise<MachineAllTime>;
 }
 
 export const useDataStore = create<DataStore>((set, get) => ({
@@ -34,6 +37,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   weeklyCache: {},
   monthlyCache: {},
   providerCache: {},
+  machineCache: {},
   isLoading: false,
   error: null,
 
@@ -80,6 +84,14 @@ export const useDataStore = create<DataStore>((set, get) => ({
     if (cached) return cached;
     const data = await fetchWithCache(`provider:${id}`, () => api.getProvider(id));
     set((s) => ({ providerCache: { ...s.providerCache, [id]: data } }));
+    return data;
+  },
+
+  fetchMachine: async (id: string) => {
+    const cached = get().machineCache[id];
+    if (cached) return cached;
+    const data = await fetchWithCache(`machine:${id}`, () => api.getMachine(id));
+    set((s) => ({ machineCache: { ...s.machineCache, [id]: data } }));
     return data;
   },
 }));
