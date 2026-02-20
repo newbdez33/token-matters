@@ -4,27 +4,23 @@ import { toLocalDate } from '../utils/date.js';
 
 export interface OpenCodeSession {
   id: string;
-  createdAt: string;
-  title: string | null;
-  inputTokens: number;
-  outputTokens: number;
-  cacheReadTokens: number;
-  cacheWriteTokens: number;
-  reasoningTokens: number;
+  timeCreated: number;
+  title: string;
 }
 
 export interface OpenCodeMessage {
   id: string;
   sessionId: string;
+  timeCreated: number;
   role: string;
-  modelProvider: string | null;
   modelId: string | null;
-  createdAt: string;
+  providerId: string | null;
   inputTokens: number;
   outputTokens: number;
   cacheReadTokens: number;
   cacheWriteTokens: number;
   reasoningTokens: number;
+  totalTokens: number;
 }
 
 export interface ModelAggregate {
@@ -45,8 +41,8 @@ export function querySessionsByDate(
   date: string,
   timezone: string,
 ): OpenCodeSession[] {
-  // Fetch sessions from a ±1 day UTC window, then filter precisely
-  // using timezone-aware date conversion
+  // time_created is unix milliseconds — query a ±1 day window, then filter
+  // precisely using timezone-aware date conversion
   const target = new Date(date + 'T00:00:00Z');
   const prev = new Date(target);
   prev.setUTCDate(prev.getUTCDate() - 1);
@@ -54,41 +50,23 @@ export function querySessionsByDate(
   next.setUTCDate(next.getUTCDate() + 2);
 
   const stmt = db.prepare(`
-    SELECT id, created_at, title,
-           COALESCE(input_tokens, 0) as input_tokens,
-           COALESCE(output_tokens, 0) as output_tokens,
-           COALESCE(cache_read_tokens, 0) as cache_read_tokens,
-           COALESCE(cache_write_tokens, 0) as cache_write_tokens,
-           COALESCE(reasoning_tokens, 0) as reasoning_tokens
-    FROM sessions
-    WHERE date(created_at) BETWEEN ? AND ?
+    SELECT id, time_created, title
+    FROM session
+    WHERE time_created >= ? AND time_created < ?
   `);
 
-  const rows = stmt.all(
-    prev.toISOString().slice(0, 10),
-    next.toISOString().slice(0, 10),
-  ) as Array<{
+  const rows = stmt.all(prev.getTime(), next.getTime()) as Array<{
     id: string;
-    created_at: string;
-    title: string | null;
-    input_tokens: number;
-    output_tokens: number;
-    cache_read_tokens: number;
-    cache_write_tokens: number;
-    reasoning_tokens: number;
+    time_created: number;
+    title: string;
   }>;
 
   return rows
-    .filter(r => toLocalDate(r.created_at, timezone) === date)
+    .filter(r => toLocalDate(new Date(r.time_created).toISOString(), timezone) === date)
     .map(r => ({
       id: r.id,
-      createdAt: r.created_at,
+      timeCreated: r.time_created,
       title: r.title,
-      inputTokens: r.input_tokens,
-      outputTokens: r.output_tokens,
-      cacheReadTokens: r.cache_read_tokens,
-      cacheWriteTokens: r.cache_write_tokens,
-      reasoningTokens: r.reasoning_tokens,
     }));
 }
 
@@ -98,46 +76,55 @@ export function queryMessagesBySessionIds(
 ): OpenCodeMessage[] {
   if (sessionIds.length === 0) return [];
 
+  // message.data is a JSON blob with structure:
+  // { role, modelID, providerID, tokens: { total, input, output, reasoning, cache: { read, write } } }
   const placeholders = sessionIds.map(() => '?').join(',');
   const stmt = db.prepare(`
-    SELECT id, session_id, role, model_provider, model_id, created_at,
-           COALESCE(input_tokens, 0) as input_tokens,
-           COALESCE(output_tokens, 0) as output_tokens,
-           COALESCE(cache_read_tokens, 0) as cache_read_tokens,
-           COALESCE(cache_write_tokens, 0) as cache_write_tokens,
-           COALESCE(reasoning_tokens, 0) as reasoning_tokens
-    FROM messages
+    SELECT id, session_id, time_created, data
+    FROM message
     WHERE session_id IN (${placeholders})
-      AND role = 'assistant'
+      AND json_extract(data, '$.role') = 'assistant'
+      AND json_extract(data, '$.tokens') IS NOT NULL
   `);
 
   const rows = stmt.all(...sessionIds) as Array<{
     id: string;
     session_id: string;
-    role: string;
-    model_provider: string | null;
-    model_id: string | null;
-    created_at: string;
-    input_tokens: number;
-    output_tokens: number;
-    cache_read_tokens: number;
-    cache_write_tokens: number;
-    reasoning_tokens: number;
+    time_created: number;
+    data: string;
   }>;
 
-  return rows.map(r => ({
-    id: r.id,
-    sessionId: r.session_id,
-    role: r.role,
-    modelProvider: r.model_provider,
-    modelId: r.model_id,
-    createdAt: r.created_at,
-    inputTokens: r.input_tokens,
-    outputTokens: r.output_tokens,
-    cacheReadTokens: r.cache_read_tokens,
-    cacheWriteTokens: r.cache_write_tokens,
-    reasoningTokens: r.reasoning_tokens,
-  }));
+  return rows.map(r => {
+    const d = JSON.parse(r.data) as {
+      role: string;
+      modelID?: string;
+      providerID?: string;
+      tokens?: {
+        total?: number;
+        input?: number;
+        output?: number;
+        reasoning?: number;
+        cache?: { read?: number; write?: number };
+      };
+    };
+    const tokens = d.tokens ?? {};
+    const cache = tokens.cache ?? {};
+
+    return {
+      id: r.id,
+      sessionId: r.session_id,
+      timeCreated: r.time_created,
+      role: d.role,
+      modelId: d.modelID ?? null,
+      providerId: d.providerID ?? null,
+      inputTokens: tokens.input ?? 0,
+      outputTokens: tokens.output ?? 0,
+      cacheReadTokens: cache.read ?? 0,
+      cacheWriteTokens: cache.write ?? 0,
+      reasoningTokens: tokens.reasoning ?? 0,
+      totalTokens: tokens.total ?? 0,
+    };
+  });
 }
 
 export function aggregateByModel(
@@ -164,8 +151,7 @@ export function aggregateByModel(
     agg.outputTokens += msg.outputTokens;
     agg.cacheReadTokens += msg.cacheReadTokens;
     agg.cacheWriteTokens += msg.cacheWriteTokens;
-    agg.totalTokens += msg.inputTokens + msg.outputTokens +
-      msg.cacheReadTokens + msg.cacheWriteTokens;
+    agg.totalTokens += msg.totalTokens;
     agg.requests += 1;
   }
 
