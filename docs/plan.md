@@ -18,14 +18,14 @@ Provider         多 Provider      daily/weekly/     按需加载         费用
 
 ──────── 以上已完成 ──────── 以下为新阶段 ────────
 
-Phase 6          Phase 7
-Collector        多用户系统
-Doctor & Init
-─────────────── ───────────────────────────────────────────────────
-环境诊断         7a: Backend 服务 + 用户管理 + 数据上传 API
-自动修复         7b: Collector API 上传模式
-交互式初始化     7c: Backend 聚合服务（替代 GitHub Actions）
-                 7d: Frontend 多用户支持
+Phase 6          Phase 6b         Phase 7
+Collector        GitHub API       多用户系统
+Doctor & Init    上传模式
+─────────────── ─────────────── ───────────────────────────────────
+环境诊断         免 clone 数据    7a: Backend 服务 + 用户管理
+自动修复         仓库             7b: Collector API 上传模式
+交互式初始化     GitHub Contents  7c: Backend 聚合服务
+                 API 直推         7d: Frontend 多用户支持
 ```
 
 ---
@@ -197,6 +197,96 @@ Doctor & Init
 - `pnpm collect --doctor --fix` 在空 `~/.token-matters/` 下自动创建目录和模板配置
 - `pnpm collect --init` 完成后 `~/.token-matters/config.yaml` 有效，后续 `--doctor` 全部通过
 - 所有 doctor/init 测试通过
+
+### Phase 6b：GitHub API 上传模式
+
+**目标**：Collector 通过 GitHub Contents API 直接创建 raw 文件到 `token-matters-data` 仓库，无需本地 clone 数据仓库。大幅降低新机器部署门槛。
+
+**动机**：
+
+当前部署新机器时，必须 `git clone token-matters-data`，还需配置 SSH key 用于 push。对于只需要采集数据的机器来说，维护一个本地 clone 是不必要的负担。通过 GitHub API 直推文件，部署步骤可以简化为：安装 Collector → 填写 config（含 GitHub Token） → 运行。
+
+**架构变化**：
+
+```
+当前                                    Phase 6b
+────                                    ────────
+Collector                               Collector
+    │ git add/commit/push                   │ PUT /repos/.../contents/raw/...
+    ▼                                       ▼
+token-matters-data (本地 clone)         GitHub API (无需本地 clone)
+                                            │
+                                            ▼
+                                        token-matters-data (远程仓库)
+                                            │ push 事件触发 Actions（不变）
+                                            ▼
+                                        token-matters-summary（不变）
+```
+
+> Summary 聚合管道完全不受影响——GitHub Actions 仍然由 push 事件触发。
+
+**交付物**：
+
+- [ ] `config.yaml` 新增配置：
+  ```yaml
+  # 上传模式: 'git'（默认）或 'github-api'
+  uploadMode: github-api
+
+  github:
+    token: ghp_xxxxxxxxxxxx           # GitHub PAT（需 contents:write 权限）
+    repo: newbdez33/token-matters-data # owner/repo 格式
+  ```
+- [ ] 新增 `collector/src/github-uploader.ts`
+  - 使用 [GitHub Contents API](https://docs.github.com/en/rest/repos/contents#create-or-update-file-contents)：`PUT /repos/{owner}/{repo}/contents/{path}`
+  - 请求体：`{ message, content (base64), branch }`
+  - 每个 raw 文件一次 API 调用
+- [ ] 去重逻辑
+  - 上传前先 `GET /repos/{owner}/{repo}/contents/{path}` 检查文件是否已存在
+  - 文件名含 content hash，存在即跳过（`200` → skip，`404` → upload）
+- [ ] `main.ts` 根据 `uploadMode` 选择上传策略：
+  ```
+  uploadMode: git        → 现有 git.ts（git add/commit/push）
+  uploadMode: github-api → 新增 github-uploader.ts（Contents API）
+  ```
+- [ ] 错误处理
+  - `401` → Token 无效或过期，提示用户检查
+  - `403` → Token 权限不足，提示需要 `contents:write`
+  - `422` → 文件已存在（竞态条件），视为成功
+  - 网络错误 → 重试 3 次，指数退避
+- [ ] `--doctor` 集成：`github-api` 模式下检查 Token 有效性和仓库可访问性
+- [ ] `--init` 集成：选择上传模式时引导生成 GitHub PAT
+- [ ] 单元测试
+
+**GitHub PAT 配置指引**（文档/init 引导中说明）：
+
+1. 访问 GitHub → Settings → Developer settings → Fine-grained personal access tokens
+2. 创建 Token，仅授权 `newbdez33/token-matters-data` 仓库
+3. 权限：Contents → Read and Write
+4. 复制 Token 填入 `config.yaml` 或环境变量 `$GITHUB_TOKEN`
+
+**向后兼容**：
+
+| `uploadMode` | 行为 | 需要本地 clone | 需要 SSH Key |
+|:------------:|------|:--------------:|:------------:|
+| `git`（默认） | git add / commit / push | 是 | 是 |
+| `github-api` | Contents API 直推 | 否 | 否 |
+
+> `uploadMode` 未设置时默认 `git`，现有用户行为完全不变。
+
+**验证标准**：
+
+- `uploadMode: github-api` 时 Collector 成功创建 raw 文件到远程仓库
+- 文件名、内容、目录结构与 git 模式产出完全一致
+- 重复运行不产生重复文件（hash 去重生效）
+- push 事件正常触发 GitHub Actions 聚合管道
+- `uploadMode: git` 时行为与现有完全一致
+- 无 `token-matters-data` 本地 clone 的机器上可正常采集和上传
+
+**与 Phase 7 的关系**：
+
+Phase 6b 仍是单用户架构，数据存储在 GitHub 仓库中。当 Phase 7 的 Backend 服务就绪后，`uploadMode` 再增加 `api` 选项指向自建 Backend，形成三级演进：`git` → `github-api` → `api`。
+
+---
 
 ### Phase 7：多用户系统
 
