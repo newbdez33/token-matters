@@ -131,6 +131,7 @@ pnpm test       # run tests
 |----------|----------|
 | [`architecture.md`](docs/architecture.md) | Dual-repo architecture, data store design, data flow, dedup strategy, ADRs |
 | [`collector.md`](docs/collector.md) | Collector structure, provider interface, collection pipeline, config |
+| [`collector-deploy.md`](docs/collector-deploy.md) | Step-by-step guide to deploy Collector on a new machine |
 | [`backend.md`](docs/backend.md) | Summary aggregation pipeline, SVG badges, Phase 2 backend roadmap |
 | [`frontend.md`](docs/frontend.md) | Feature requirements, tech stack, UI visual design system |
 | [`data-integration.md`](docs/data-integration.md) | Per-provider technical details, API docs, POC results |
