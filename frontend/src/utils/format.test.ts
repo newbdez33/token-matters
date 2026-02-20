@@ -17,14 +17,10 @@ describe('formatTokens', () => {
 
 describe('formatCost', () => {
   it('formats USD', () => {
-    expect(formatCost(127.43, 'USD')).toBe('$127.43');
+    expect(formatCost(127.43)).toBe('$127.43');
   });
 
-  it('formats CNY', () => {
-    expect(formatCost(68, 'CNY')).toBe('¥68.00');
-  });
-
-  it('defaults to USD', () => {
+  it('formats small amounts', () => {
     expect(formatCost(1.25)).toBe('$1.25');
   });
 });

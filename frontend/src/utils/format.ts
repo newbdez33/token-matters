@@ -6,10 +6,8 @@ export function formatTokens(n: number): string {
   return n.toLocaleString();
 }
 
-export function formatCost(amount: number, currency = 'USD'): string {
-  if (currency === 'USD') return `$${amount.toFixed(2)}`;
-  if (currency === 'CNY') return `¥${amount.toFixed(2)}`;
-  return `${amount.toFixed(2)} ${currency}`;
+export function formatCost(amount: number): string {
+  return `$${amount.toFixed(2)}`;
 }
 
 export function formatCostCompact(amount: number): string {

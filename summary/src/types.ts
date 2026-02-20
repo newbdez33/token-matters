@@ -87,6 +87,7 @@ export interface ProviderSummary {
   cacheReadTokens: number;
   totalTokens: number;
   cost: number;
+  costUSD: number;
   currency: string;
   requests: number;
 }
