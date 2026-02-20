@@ -47,7 +47,7 @@ export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProp
                 {p.totalTokens.toLocaleString()} tokens
               </span>
               <span className="font-mono tabular-nums text-muted-foreground">
-                {formatCost(p.costUSD)}
+                {formatCost(p.costUSD ?? p.cost ?? 0)}
               </span>
             </span>
             {/* Desktop columns */}
@@ -55,7 +55,7 @@ export function ProviderBreakdownTable({ providers }: ProviderBreakdownTableProp
               {p.totalTokens.toLocaleString()}
             </span>
             <span className="hidden sm:inline text-right font-mono tabular-nums text-muted-foreground">
-              {formatCost(p.costUSD)}
+              {formatCost(p.costUSD ?? p.cost ?? 0)}
             </span>
             <span className="hidden sm:inline text-right">
               <DataQualityBadge quality={p.dataQuality} />
