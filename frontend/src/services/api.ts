@@ -5,6 +5,7 @@ import type {
   WeeklySummary,
   MonthlySummary,
   ProviderAllTime,
+  MachineAllTime,
 } from '@/types/summary';
 
 const BASE = 'https://newbdez33.github.io/token-matters-summary/summary';
@@ -22,4 +23,5 @@ export const api = {
   getWeekly: (week: string) => fetchJSON<WeeklySummary>(`weekly/${week}.json`),
   getMonthly: (month: string) => fetchJSON<MonthlySummary>(`monthly/${month}.json`),
   getProvider: (id: string) => fetchJSON<ProviderAllTime>(`providers/${id}.json`),
+  getMachine: (id: string) => fetchJSON<MachineAllTime>(`machines/${id}.json`),
 };

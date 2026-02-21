@@ -77,11 +77,33 @@ function mergeProviderSummaries(
           cacheReadTokens: existing.cacheReadTokens + ps.cacheReadTokens,
           totalTokens: existing.totalTokens + ps.totalTokens,
           cost: existing.cost + ps.cost,
+          costUSD: existing.costUSD + ps.costUSD,
           currency: ps.currency,
           requests: existing.requests + ps.requests,
         });
       } else {
         map.set(ps.provider, { ...ps });
+      }
+    }
+  }
+  return Array.from(map.values());
+}
+
+function mergeMachineSummaries(
+  lists: MachineSummary[][],
+): MachineSummary[] {
+  const map = new Map<string, MachineSummary>();
+  for (const list of lists) {
+    for (const ms of list) {
+      const existing = map.get(ms.machine);
+      if (existing) {
+        map.set(ms.machine, {
+          machine: ms.machine,
+          totalTokens: existing.totalTokens + ms.totalTokens,
+          requests: existing.requests + ms.requests,
+        });
+      } else {
+        map.set(ms.machine, { ...ms });
       }
     }
   }
@@ -158,6 +180,7 @@ export function buildDailySummaries(
       }
 
       // Provider aggregation
+      const providerCostUSD = convertToUSD(providerCostAmount, providerCurrency, pricing);
       const existingProvider = providerMap.get(file.provider);
       if (existingProvider) {
         existingProvider.inputTokens += providerInputTokens;
@@ -166,6 +189,7 @@ export function buildDailySummaries(
         existingProvider.cacheReadTokens += providerCacheRead;
         existingProvider.totalTokens += providerTotalTokens;
         existingProvider.cost += providerCostAmount;
+        existingProvider.costUSD += providerCostUSD;
         existingProvider.requests += providerRequests;
       } else {
         providerMap.set(file.provider, {
@@ -177,6 +201,7 @@ export function buildDailySummaries(
           cacheReadTokens: providerCacheRead,
           totalTokens: providerTotalTokens,
           cost: providerCostAmount,
+          costUSD: providerCostUSD,
           currency: providerCurrency,
           requests: providerRequests,
         });
@@ -468,15 +493,18 @@ function buildPeriodSummary(
 function aggregateDays(days: DailySummary[]): {
   totals: TokenTotals;
   byProvider: ProviderSummary[];
+  byMachine: MachineSummary[];
   dailyTrend: DailyTrendEntry[];
 } {
   let totals = emptyTotals();
   const providerLists: ProviderSummary[][] = [];
+  const machineLists: MachineSummary[][] = [];
   const trend: DailyTrendEntry[] = [];
 
   for (const ds of days) {
     totals = addTotals(totals, ds.totals);
     providerLists.push(ds.byProvider);
+    machineLists.push(ds.byMachine);
     trend.push({
       date: ds.date,
       totalTokens: ds.totals.totalTokens,
@@ -487,6 +515,7 @@ function aggregateDays(days: DailySummary[]): {
   return {
     totals,
     byProvider: mergeProviderSummaries(providerLists),
+    byMachine: mergeMachineSummaries(machineLists),
     dailyTrend: trend,
   };
 }

@@ -67,7 +67,7 @@ npx tsx summary/src/main.ts --raw-dir ./raw --dry-run
 
 ### 3.3 GitHub Actions Workflow
 
-Summary 运行在 `token-matters-data` 仓库的 GitHub Actions 中，聚合后将结果跨仓库推送到 `token-matters-summary`。
+Summary 运行在 **`token-matters-data`** (私有仓库) 的 GitHub Actions 中。它会从 `token-matters`（公开仓库）拉取最新的聚合代码来执行，聚合后将结果推送到 `token-matters-summary`。
 
 ```yaml
 # .github/workflows/summarize.yml (位于 token-matters-data 仓库)
@@ -76,8 +76,8 @@ on:
   push:
     paths: ['raw/**']
   schedule:
-    - cron: '0 */6 * * *'            # 每 6 小时兜底
-  workflow_dispatch:                   # 支持手动触发
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   summarize:
@@ -85,16 +85,35 @@ jobs:
     steps:
       - name: Checkout data repo
         uses: actions/checkout@v4
+
+      - name: Checkout main repo (summary code)
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          repository: ${{ github.repository_owner }}/token-matters
+          path: token-matters
+          sparse-checkout: summary
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: cd token-matters/summary && pnpm install --frozen-lockfile
+
       - name: Run summary aggregation
-        run: npx tsx summary/src/main.ts --raw-dir ./raw --output-dir ./output/summary --pricing ./pricing.json
+        run: |
+          npx tsx token-matters/summary/src/main.ts \
+            --raw-dir ./raw \
+            --output-dir ./output/summary \
+            --badge-dir ./output/badge \
+            --pricing ./pricing.json \
+            --reference-date "$(date -u +%Y-%m-%d)"
 
       - name: Checkout summary repo
         uses: actions/checkout@v4
@@ -103,7 +122,7 @@ jobs:
           path: summary-repo
           ssh-key: ${{ secrets.SUMMARY_DEPLOY_KEY }}
 
-      - name: Push summary + badge to public repo
+      - name: Push summary to public repo
         run: |
           cp -r ./output/summary/* summary-repo/summary/
           mkdir -p summary-repo/badge
@@ -116,11 +135,13 @@ jobs:
           git push
 ```
 
+**关键点**：聚合代码来自 `token-matters` 仓库的 `summary/` 目录（通过 sparse-checkout 拉取 main 分支最新代码），因此修改聚合逻辑后只需 push `token-matters` 即可，无需改动 `token-matters-data`。
+
 **跨仓库推送认证**：
 
 | 方式 | 配置 | 权限范围 |
 |------|------|---------|
-| **Deploy Key**（推荐） | 在 `token-matters-summary` 添加 deploy key（write 权限），私钥存为 data 仓库的 `SUMMARY_DEPLOY_KEY` secret | 仅限目标仓库 |
+| **Deploy Key**（当前使用） | 在 `token-matters-summary` 添加 deploy key（write 权限），私钥存为 data 仓库的 `SUMMARY_DEPLOY_KEY` secret | 仅限目标仓库 |
 | PAT（备选） | 创建 Fine-grained PAT，授权 `token-matters-summary` 的 `contents: write` | 可配置范围 |
 
 **触发条件**：
@@ -129,7 +150,21 @@ jobs:
 |----------|------|
 | `push to raw/**` | Collector 推送新数据后自动聚合 |
 | `schedule (每 6 小时)` | 兜底，确保 summary 不过于陈旧 |
-| `workflow_dispatch` | 调试和补数据场景 |
+| `workflow_dispatch` | 手动触发（见下方操作说明） |
+
+#### 手动重新运行 Summary
+
+当修改了聚合逻辑（如 `summary/src/` 下的代码）并 push 到 `token-matters` 后，需要手动触发 workflow 来重新生成 summary：
+
+```bash
+# 通过 gh CLI 触发（推荐）
+gh workflow run summarize.yml --repo newbdez33/token-matters-data
+
+# 查看运行状态
+gh run list --repo newbdez33/token-matters-data --workflow=summarize.yml --limit 3
+```
+
+也可以在 GitHub 网页上操作：进入 `token-matters-data` → Actions → Summarize Token Data → Run workflow。
 
 ### 3.4 聚合管道
 

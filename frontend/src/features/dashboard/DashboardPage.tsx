@@ -5,6 +5,7 @@ import { formatCost, formatNumber, formatDate } from '@/utils/format';
 import { TrendBarChart } from '@/components/charts/TrendBarChart';
 import { ProviderBreakdownTable } from '@/components/charts/ProviderBreakdownTable';
 import { ModelBreakdownTable } from '@/components/charts/ModelBreakdownTable';
+import { MachineBreakdownTable } from '@/components/charts/MachineBreakdownTable';
 import { LoadingSkeleton, LoadingBlock } from '@/components/shared/LoadingSkeleton';
 import { ErrorMessage } from '@/components/shared/ErrorMessage';
 
@@ -68,6 +69,19 @@ export function DashboardPage() {
         </h2>
         <ProviderBreakdownTable providers={providers} />
       </section>
+
+      {/* By Machine */}
+      {period.byMachine && period.byMachine.length > 0 && (
+        <>
+          <hr className="border-border" />
+          <section>
+            <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+              By Machine
+            </h2>
+            <MachineBreakdownTable machines={period.byMachine} />
+          </section>
+        </>
+      )}
 
       <hr className="border-border" />
 

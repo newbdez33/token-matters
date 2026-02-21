@@ -8,37 +8,30 @@ Deploy the Collector on a new machine to start collecting token usage data.
 
 | Requirement | How to check | Install |
 |-------------|-------------|---------|
-| Node.js >= 20 | `node -v` | [nvm](https://github.com/nvm-sh/nvm) recommended |
+| Node.js >= 20 | `node -v` | [nvm](https://github.com/nvm-sh/nvm) (macOS/Linux) · `winget install OpenJS.NodeJS.LTS` (Windows) |
 | pnpm | `pnpm -v` | `npm install -g pnpm` |
-| Git | `git --version` | Xcode CLI tools (macOS) / `apt install git` (Linux) |
+| Git | `git --version` | Xcode CLI tools (macOS) · `apt install git` (Linux) · `winget install Git.Git` (Windows) |
 | SSH key with GitHub access | `ssh -T git@github.com` | [GitHub docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) |
 
-## Step 1: Clone repositories
+---
+
+The guide below is organized by platform. Steps 1–4 are the same across all platforms (with platform-specific paths noted). Step 5 differs per platform.
+
+## Steps 1–4: Clone, Install, Configure, Verify
+
+### macOS / Linux
 
 ```bash
-# Code repo
+# Step 1: Clone repositories
 git clone git@github.com:newbdez33/token-matters.git ~/projects/token-matters
-
-# Data repo (private, needs SSH access)
 git clone git@github.com:newbdez33/token-matters-data.git ~/projects/token-matters-data
-```
 
-## Step 2: Install dependencies
-
-```bash
+# Step 2: Install dependencies
 cd ~/projects/token-matters/collector
 pnpm install
-```
+pnpm collect --help   # verify CLI runs
 
-Verify the CLI runs:
-
-```bash
-pnpm collect --help
-```
-
-## Step 3: Create config
-
-```bash
+# Step 3: Create config
 mkdir -p ~/.token-matters
 ```
 
@@ -71,30 +64,73 @@ providers:
     # traeDir: ~/Library/Application Support/Trae
 ```
 
-> Only enable providers that are actually installed on this machine. Disable the rest with `enabled: false`.
-
-## Step 4: Verify
-
 ```bash
+# Step 4: Verify
 cd ~/projects/token-matters/collector
+pnpm collect --status     # shows which providers are available
+pnpm collect --dry-run    # collects without writing or pushing
+pnpm collect              # run for real
 
-# Check provider status — shows which providers are available
-pnpm collect --status
-
-# Dry run — collects data without writing files or pushing
-pnpm collect --dry-run
-
-# If everything looks good, run for real
-pnpm collect
-```
-
-After a successful run, check that raw files were created:
-
-```bash
 ls ~/projects/token-matters-data/raw/
+# should see a directory named after this machine's hostname
 ```
 
-You should see a directory named after this machine's hostname (e.g., `imac-studio/`).
+### Windows (PowerShell)
+
+```powershell
+# Step 1: Clone repositories
+git clone git@github.com:newbdez33/token-matters.git C:\projects\token-matters
+git clone git@github.com:newbdez33/token-matters-data.git C:\projects\token-matters-data
+
+# Step 2: Install dependencies
+cd C:\projects\token-matters\collector
+pnpm install
+pnpm collect --help   # verify CLI runs
+
+# Step 3: Create config
+mkdir "$env:USERPROFILE\.token-matters"
+```
+
+Create `%USERPROFILE%\.token-matters\config.yaml`:
+
+```yaml
+dataRepo: C:\projects\token-matters-data
+timezone: Asia/Shanghai
+
+providers:
+  claude-code:
+    enabled: true
+    # claudeDir: C:\Users\yourname\.claude  # optional, defaults to ~/.claude
+
+  codex:
+    enabled: true
+    # codexDir: C:\Users\yourname\.codex    # optional, defaults to ~/.codex
+
+  opencode:
+    enabled: true
+
+  glm-coding:
+    enabled: false                   # enable if you have an API key
+    # apiKey: your-api-key
+    # baseUrl: https://open.bigmodel.cn
+
+  trae-pro:
+    enabled: false                   # enable if TRAE is installed
+    # traeDir: C:\Users\yourname\AppData\Roaming\Trae
+```
+
+```powershell
+# Step 4: Verify
+cd C:\projects\token-matters\collector
+pnpm collect --status     # shows which providers are available
+pnpm collect --dry-run    # collects without writing or pushing
+pnpm collect              # run for real
+
+dir C:\projects\token-matters-data\raw\
+# should see a directory named after this machine's hostname
+```
+
+> Only enable providers that are actually installed on this machine. Disable the rest with `enabled: false`.
 
 ## Step 5: Set up scheduled collection
 
@@ -185,6 +221,53 @@ Add this line (runs daily at 00:30):
 
 > Use full paths — cron does not load your shell profile either.
 
+### Windows (Task Scheduler)
+
+Find your `npx` path first:
+
+```powershell
+(Get-Command npx).Source
+# e.g., C:\Program Files\nodejs\npx.cmd
+```
+
+Create a scheduled task (runs daily at 00:30):
+
+```powershell
+$action = New-ScheduledTaskAction `
+  -Execute "C:\Program Files\nodejs\npx.cmd" `
+  -Argument "tsx src/main.ts" `
+  -WorkingDirectory "C:\projects\token-matters\collector"
+
+$trigger = New-ScheduledTaskTrigger -Daily -At 00:30
+
+$settings = New-ScheduledTaskSettingsSet `
+  -StartWhenAvailable `
+  -DontStopIfGoingOnBatteries `
+  -AllowStartIfOnBatteries
+
+Register-ScheduledTask `
+  -TaskName "TokenMattersCollector" `
+  -Action $action `
+  -Trigger $trigger `
+  -Settings $settings `
+  -Description "Token Matters daily collection"
+```
+
+> Replace the `npx.cmd` path with the output from `Get-Command npx` above.
+
+Verify:
+
+```powershell
+# Trigger a manual run
+Start-ScheduledTask -TaskName "TokenMattersCollector"
+
+# Check status (LastTaskResult 0 = success)
+Get-ScheduledTask -TaskName "TokenMattersCollector" | Select-Object State, LastRunTime, LastTaskResult
+
+# To remove the task
+Unregister-ScheduledTask -TaskName "TokenMattersCollector" -Confirm:$false
+```
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
@@ -192,18 +275,22 @@ Add this line (runs daily at 00:30):
 | `pnpm collect --status` shows all providers unavailable | Provider data directories don't exist on this machine | Disable unused providers in config.yaml |
 | `git push` fails during collection | SSH key not set up for GitHub | Run `ssh -T git@github.com` to verify |
 | launchd runs but no output | Wrong `npx` path in plist | Run `which npx` and update the plist |
+| Task Scheduler shows `LastTaskResult` non-zero | Wrong `npx.cmd` path or working directory | Verify path with `(Get-Command npx).Source` |
 | `raw/` directory has wrong machine name | Hostname auto-detection | Add `machine: your-name` to config.yaml to override |
 | Git conflicts on push | Another machine pushed first | Collector auto-retries with `git pull --rebase` (up to 3 times) |
 
 ## Updating the Collector
 
-When the Collector code is updated:
+When the Collector code is updated, pull the latest and reinstall dependencies:
 
 ```bash
-cd ~/projects/token-matters
-git pull
-cd collector
-pnpm install    # in case dependencies changed
+# macOS / Linux
+cd ~/projects/token-matters && git pull && cd collector && pnpm install
 ```
 
-No need to reload launchd/cron — the next scheduled run picks up the new code automatically (it runs `tsx` directly on source files).
+```powershell
+# Windows
+cd C:\projects\token-matters; git pull; cd collector; pnpm install
+```
+
+No need to reload launchd/cron/Task Scheduler — the next scheduled run picks up the new code automatically (it runs `tsx` directly on source files).

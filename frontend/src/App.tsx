@@ -7,6 +7,9 @@ import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 const ProviderPage = lazy(() =>
   import('@/features/providers/ProviderPage').then((m) => ({ default: m.ProviderPage })),
 );
+const MachinePage = lazy(() =>
+  import('@/features/machines/MachinePage').then((m) => ({ default: m.MachinePage })),
+);
 const AnalyticsPage = lazy(() =>
   import('@/features/analytics/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
 );
@@ -27,6 +30,10 @@ export default function App() {
           <Route
             path="providers/:id"
             element={<Suspense fallback={<PageFallback />}><ProviderPage /></Suspense>}
+          />
+          <Route
+            path="machines/:id"
+            element={<Suspense fallback={<PageFallback />}><MachinePage /></Suspense>}
           />
           <Route
             path="analytics"

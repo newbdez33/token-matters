@@ -24,6 +24,7 @@ export interface ProviderSummary {
   cacheReadTokens: number;
   totalTokens: number;
   cost: number;
+  costUSD: number;
   currency: string;
   requests: number;
 }
@@ -59,6 +60,7 @@ export interface PeriodSummary {
   dateRange: { start: string; end: string };
   totals: TokenTotals;
   byProvider: ProviderSummary[];
+  byMachine: MachineSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 
@@ -67,6 +69,7 @@ export interface WeeklySummary {
   dateRange: { start: string; end: string };
   totals: TokenTotals;
   byProvider: ProviderSummary[];
+  byMachine: MachineSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 
@@ -75,11 +78,19 @@ export interface MonthlySummary {
   dateRange: { start: string; end: string };
   totals: TokenTotals;
   byProvider: ProviderSummary[];
+  byMachine: MachineSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 
 export interface ProviderAllTime {
   provider: string;
+  dateRange: { start: string; end: string };
+  totals: TokenTotals;
+  dailyTrend: DailyTrendEntry[];
+}
+
+export interface MachineAllTime {
+  machine: string;
   dateRange: { start: string; end: string };
   totals: TokenTotals;
   dailyTrend: DailyTrendEntry[];
