@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   formatTokens,
   formatCost,
+  formatRequests,
   formatDateRange,
   generateBadge,
   generateBadges,
@@ -11,6 +12,7 @@ import {
 const sampleData: BadgeData = {
   tokens: 479_400_000,
   costUSD: 1717.56,
+  requests: 4521,
   dateRange: { start: '2026-02-13', end: '2026-02-19' },
 };
 
@@ -42,6 +44,17 @@ describe('formatCost', () => {
 
   it('formats small values', () => {
     expect(formatCost(0.5)).toBe('$0.50');
+  });
+});
+
+describe('formatRequests', () => {
+  it('formats thousands', () => {
+    expect(formatRequests(4521)).toBe('4.5K');
+    expect(formatRequests(12000)).toBe('12K');
+  });
+
+  it('formats small numbers with commas', () => {
+    expect(formatRequests(500)).toBe('500');
   });
 });
 
@@ -103,20 +116,36 @@ describe('generateBadge', () => {
     const data: BadgeData = {
       tokens: 0,
       costUSD: 0,
+      requests: 0,
       dateRange: { start: '2026-02-13', end: '2026-02-19' },
     };
     const svg = generateBadge(data, { items: ['tokens', 'cost'] });
     expect(svg).toContain('>0');
     expect(svg).toContain('$0.00');
   });
+
+  it('generates dark stat block SVG', () => {
+    const svg = generateBadge(sampleData, { theme: 'dark' });
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('AI Token Usage (7d)');
+    expect(svg).toContain('479.4M');
+    expect(svg).toContain('$1,717.56');
+    expect(svg).toContain('4.5K');
+    expect(svg).toContain('Feb 13');
+    // dark theme markers
+    expect(svg).toContain('#171717');
+    expect(svg).toContain('#f5f5f5');
+    expect(svg).toContain('Inter');
+  });
 });
 
 describe('generateBadges', () => {
-  it('returns all 4 badge files', () => {
+  it('returns all 5 badge files', () => {
     const result = generateBadges(sampleData);
     expect(Object.keys(result).sort()).toEqual([
       'token-usage-cost-pixel.svg',
       'token-usage-cost.svg',
+      'token-usage-dark.svg',
       'token-usage-pixel.svg',
       'token-usage.svg',
     ]);

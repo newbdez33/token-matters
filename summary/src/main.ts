@@ -95,6 +95,7 @@ export async function run(args: CLIArgs): Promise<void> {
   const badgeSvgs = generateBadges({
     tokens: latest.last7Days.totals.totalTokens,
     costUSD: latest.last7Days.totals.cost.totalUSD,
+    requests: latest.last7Days.totals.requests,
     dateRange: latest.last7Days.dateRange,
   });
 

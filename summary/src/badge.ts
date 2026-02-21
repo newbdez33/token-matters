@@ -1,9 +1,10 @@
 export type BadgeItem = 'tokens' | 'cost' | 'dateRange';
-export type BadgeTheme = 'flat' | 'pixel';
+export type BadgeTheme = 'flat' | 'pixel' | 'dark';
 
 export interface BadgeData {
   tokens: number;
   costUSD: number;
+  requests: number;
   dateRange: { start: string; end: string };
 }
 
@@ -38,6 +39,12 @@ export function formatDateRange(start: string, end: string): string {
     return `${sMonth} ${sDay}\u2013${eDay}`;
   }
   return `${sMonth} ${sDay} \u2013 ${eMonth} ${eDay}`;
+}
+
+export function formatRequests(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}K`;
+  return n.toLocaleString('en-US');
 }
 
 function buildValue(data: BadgeData, items: BadgeItem[]): string {
@@ -104,12 +111,54 @@ function renderPixel(label: string, value: string): string {
 </svg>`;
 }
 
+function renderDark(data: BadgeData): string {
+  const width = 240;
+  const height = 148;
+  const rx = 10;
+  const px = 20;  // horizontal padding
+  const labelX = px;
+  const valueX = width - px;
+
+  const title = 'AI Token Usage (7d)';
+  const rows = [
+    { label: 'Tokens', value: formatTokens(data.tokens) },
+    { label: 'Cost', value: formatCost(data.costUSD) },
+    { label: 'Requests', value: formatRequests(data.requests) },
+    { label: 'Period', value: formatDateRange(data.dateRange.start, data.dateRange.end) },
+  ];
+
+  const titleY = 32;
+  const dividerY = 44;
+  const rowStartY = 68;
+  const rowGap = 24;
+
+  const rowsSvg = rows.map((r, i) => {
+    const y = rowStartY + i * rowGap;
+    return `    <text x="${labelX}" y="${y}" fill="#a3a3a3" font-size="12">${r.label}</text>
+    <text x="${valueX}" y="${y}" fill="#f5f5f5" font-size="12" text-anchor="end" font-family="'SF Mono','Cascadia Code','Consolas',monospace">${r.value}</text>`;
+  }).join('\n');
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" role="img" aria-label="${title}">
+  <title>${title}</title>
+  <rect width="${width}" height="${height}" rx="${rx}" fill="#171717"/>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="${rx}" fill="none" stroke="#333" stroke-width="1"/>
+  <g font-family="'Inter','SF Pro Display',-apple-system,'Segoe UI',sans-serif">
+    <text x="${labelX}" y="${titleY}" fill="#f5f5f5" font-size="13" font-weight="500">${title}</text>
+    <line x1="${labelX}" y1="${dividerY}" x2="${width - px}" y2="${dividerY}" stroke="#333" stroke-width="1"/>
+${rowsSvg}
+  </g>
+</svg>`;
+}
+
 export function generateBadge(data: BadgeData, options?: Partial<BadgeOptions>): string {
   const theme = options?.theme ?? 'flat';
   const items = options?.items ?? ['tokens'];
   const label = 'Token Usage (7d)';
   const value = buildValue(data, items);
 
+  if (theme === 'dark') {
+    return renderDark(data);
+  }
   if (theme === 'pixel') {
     return renderPixel(label, value);
   }
@@ -122,5 +171,6 @@ export function generateBadges(data: BadgeData): Record<string, string> {
     'token-usage-pixel.svg': generateBadge(data, { theme: 'pixel', items: ['tokens'] }),
     'token-usage-cost.svg': generateBadge(data, { theme: 'flat', items: ['tokens', 'cost'] }),
     'token-usage-cost-pixel.svg': generateBadge(data, { theme: 'pixel', items: ['tokens', 'cost'] }),
+    'token-usage-dark.svg': generateBadge(data, { theme: 'dark' }),
   };
 }
