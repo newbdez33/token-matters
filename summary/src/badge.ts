@@ -122,7 +122,7 @@ function renderDark(data: BadgeData): string {
   const height = 62;
   const rx = 10;
 
-  const label = 'AI Token Usage \u00b7 Last 30 Days';
+  const label = 'AI Tokens I Used \u00b7 Last 30 Days';
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" role="img" aria-label="${label}: ${tokensStr} tokens">
   <title>${label}: ${tokensStr} tokens</title>
