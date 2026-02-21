@@ -137,6 +137,19 @@ export function DashboardPage() {
         )}
       </section>
 
+      {/* Machines Today */}
+      {today?.byMachine && today.byMachine.length > 0 && (
+        <>
+          <hr className="border-border" />
+          <section>
+            <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+              Machines Today
+            </h2>
+            <MachineBreakdownTable machines={today.byMachine} />
+          </section>
+        </>
+      )}
+
       {/* Models Today */}
       {today?.byModel && today.byModel.length > 0 && (
         <>
