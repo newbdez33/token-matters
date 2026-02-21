@@ -112,40 +112,25 @@ function renderPixel(label: string, value: string): string {
 }
 
 function renderDark(data: BadgeData): string {
-  const width = 240;
-  const height = 152;
+  const tokensStr = data.tokens.toLocaleString('en-US');
+  const charWidth = 14.4;
+  const tokensWidth = tokensStr.length * charWidth;
+  const suffixWidth = 52; // " tokens"
+  const contentWidth = tokensWidth + suffixWidth;
+  const px = 20;
+  const width = Math.max(contentWidth + px * 2, 200);
+  const height = 62;
   const rx = 10;
-  const px = 20;  // horizontal padding
-  const labelX = px;
-  const valueX = width - px;
 
-  const title = 'AI Token Usage (7d)';
-  const rows = [
-    { label: 'Tokens', value: formatTokens(data.tokens) },
-    { label: 'Cost', value: formatCost(data.costUSD) },
-    { label: 'Requests', value: formatRequests(data.requests) },
-    { label: 'Period', value: formatDateRange(data.dateRange.start, data.dateRange.end) },
-  ];
+  const label = 'Last 30 Days';
 
-  const titleY = 30;
-  const dividerY = 42;
-  const rowStartY = 64;
-  const rowGap = 24;
-
-  const rowsSvg = rows.map((r, i) => {
-    const y = rowStartY + i * rowGap;
-    return `    <text x="${labelX}" y="${y}" fill="#a3a3a3" font-size="12">${r.label}</text>
-    <text x="${valueX}" y="${y}" fill="#f5f5f5" font-size="12" text-anchor="end" font-family="'SF Mono','Cascadia Code','Consolas',monospace">${r.value}</text>`;
-  }).join('\n');
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" role="img" aria-label="${title}">
-  <title>${title}</title>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" role="img" aria-label="${label}: ${tokensStr} tokens">
+  <title>${label}: ${tokensStr} tokens</title>
   <rect width="${width}" height="${height}" rx="${rx}" fill="#171717"/>
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="${rx}" fill="none" stroke="#333" stroke-width="1"/>
   <g font-family="'Inter','SF Pro Display',-apple-system,'Segoe UI',sans-serif">
-    <text x="${labelX}" y="${titleY}" fill="#f5f5f5" font-size="13" font-weight="500">${title}</text>
-    <line x1="${labelX}" y1="${dividerY}" x2="${width - px}" y2="${dividerY}" stroke="#333" stroke-width="1"/>
-${rowsSvg}
+    <text x="${px}" y="22" fill="#a3a3a3" font-size="11" letter-spacing="0.05em">${label}</text>
+    <text x="${px}" y="48" fill="#f5f5f5" font-size="24" font-weight="300" font-family="'SF Mono','Cascadia Code','Consolas',monospace" letter-spacing="-0.02em">${tokensStr}</text>
+    <text x="${px + tokensWidth + 6}" y="48" fill="#a3a3a3" font-size="12">tokens</text>
   </g>
 </svg>`;
 }
@@ -165,12 +150,12 @@ export function generateBadge(data: BadgeData, options?: Partial<BadgeOptions>):
   return renderFlat(label, value);
 }
 
-export function generateBadges(data: BadgeData): Record<string, string> {
+export function generateBadges(data7d: BadgeData, data30d?: BadgeData): Record<string, string> {
   return {
-    'token-usage.svg': generateBadge(data, { theme: 'flat', items: ['tokens'] }),
-    'token-usage-pixel.svg': generateBadge(data, { theme: 'pixel', items: ['tokens'] }),
-    'token-usage-cost.svg': generateBadge(data, { theme: 'flat', items: ['tokens', 'cost'] }),
-    'token-usage-cost-pixel.svg': generateBadge(data, { theme: 'pixel', items: ['tokens', 'cost'] }),
-    'token-usage-dark.svg': generateBadge(data, { theme: 'dark' }),
+    'token-usage.svg': generateBadge(data7d, { theme: 'flat', items: ['tokens'] }),
+    'token-usage-pixel.svg': generateBadge(data7d, { theme: 'pixel', items: ['tokens'] }),
+    'token-usage-cost.svg': generateBadge(data7d, { theme: 'flat', items: ['tokens', 'cost'] }),
+    'token-usage-cost-pixel.svg': generateBadge(data7d, { theme: 'pixel', items: ['tokens', 'cost'] }),
+    'token-usage-dark.svg': generateBadge(data30d ?? data7d, { theme: 'dark' }),
   };
 }

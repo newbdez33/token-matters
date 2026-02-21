@@ -124,14 +124,12 @@ describe('generateBadge', () => {
     expect(svg).toContain('$0.00');
   });
 
-  it('generates dark stat block SVG', () => {
+  it('generates dark badge SVG', () => {
     const svg = generateBadge(sampleData, { theme: 'dark' });
     expect(svg).toContain('<svg');
-    expect(svg).toContain('AI Token Usage (7d)');
-    expect(svg).toContain('479.4M');
-    expect(svg).toContain('$1,717.56');
-    expect(svg).toContain('4.5K');
-    expect(svg).toContain('Feb 13');
+    expect(svg).toContain('Last 30 Days');
+    expect(svg).toContain('479,400,000');
+    expect(svg).toContain('tokens');
     // dark theme markers
     expect(svg).toContain('#171717');
     expect(svg).toContain('#f5f5f5');
