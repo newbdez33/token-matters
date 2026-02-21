@@ -127,7 +127,7 @@ describe('generateBadge', () => {
   it('generates dark badge SVG', () => {
     const svg = generateBadge(sampleData, { theme: 'dark' });
     expect(svg).toContain('<svg');
-    expect(svg).toContain('AI Token Usage');
+    expect(svg).toContain('AI Tokens I Used');
     expect(svg).toContain('479,400,000');
     expect(svg).toContain('tokens');
     // dark theme markers
