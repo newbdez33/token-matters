@@ -113,7 +113,7 @@ function renderPixel(label: string, value: string): string {
 
 function renderDark(data: BadgeData): string {
   const width = 240;
-  const height = 148;
+  const height = 152;
   const rx = 10;
   const px = 20;  // horizontal padding
   const labelX = px;
@@ -127,9 +127,9 @@ function renderDark(data: BadgeData): string {
     { label: 'Period', value: formatDateRange(data.dateRange.start, data.dateRange.end) },
   ];
 
-  const titleY = 32;
-  const dividerY = 44;
-  const rowStartY = 68;
+  const titleY = 30;
+  const dividerY = 42;
+  const rowStartY = 64;
   const rowGap = 24;
 
   const rowsSvg = rows.map((r, i) => {
