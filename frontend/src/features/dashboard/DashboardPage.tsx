@@ -112,60 +112,60 @@ export function DashboardPage() {
 
       <hr className="border-border" />
 
-      {/* Today */}
-      <section>
-        <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-          Today
-        </h2>
-        {today ? (
-          <div>
-            <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-              <p className="text-2xl font-light font-mono tabular-nums tracking-tight">
-                {today.totals.totalTokens.toLocaleString()}
+      {/* Latest Day */}
+      {today && (
+        <>
+          <section>
+            <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+              {formatDate(today.date)}
+            </h2>
+            <div>
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                <p className="text-2xl font-light font-mono tabular-nums tracking-tight">
+                  {today.totals.totalTokens.toLocaleString()}
+                </p>
+                <span className="text-xs text-muted-foreground">tokens</span>
+                <span className="text-sm text-muted-foreground font-mono tabular-nums">
+                  {formatCost(today.totals.cost.totalUSD)}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {formatNumber(today.totals.requests)} requests
               </p>
-              <span className="text-xs text-muted-foreground">tokens</span>
-              <span className="text-sm text-muted-foreground font-mono tabular-nums">
-                {formatCost(today.totals.cost.totalUSD)}
-              </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatNumber(today.totals.requests)} requests
-            </p>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No data for today yet.</p>
-        )}
-      </section>
-
-      {/* Machines Today */}
-      {today?.byMachine && today.byMachine.length > 0 && (
-        <>
-          <hr className="border-border" />
-          <section>
-            <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-              Machines Today
-            </h2>
-            <MachineBreakdownTable machines={today.byMachine} />
           </section>
-        </>
-      )}
 
-      {/* Models Today */}
-      {today?.byModel && today.byModel.length > 0 && (
-        <>
-          <hr className="border-border" />
-          <section>
-            <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-              Models Today
-            </h2>
-            <ModelBreakdownTable models={today.byModel} />
-          </section>
+          {/* Machines */}
+          {today.byMachine && today.byMachine.length > 0 && (
+            <>
+              <hr className="border-border" />
+              <section>
+                <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+                  Machines · {formatDate(today.date)}
+                </h2>
+                <MachineBreakdownTable machines={today.byMachine} />
+              </section>
+            </>
+          )}
+
+          {/* Models */}
+          {today.byModel && today.byModel.length > 0 && (
+            <>
+              <hr className="border-border" />
+              <section>
+                <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+                  Models · {formatDate(today.date)}
+                </h2>
+                <ModelBreakdownTable models={today.byModel} />
+              </section>
+            </>
+          )}
         </>
       )}
 
       {/* Last Updated */}
       <p className="text-[10px] text-muted-foreground pt-4">
-        Last updated: {formatDate(latest.lastUpdated, 'MMM D, YYYY HH:mm')}
+        Last updated: {formatDate(latest.lastUpdated, 'MMM D, YYYY HH:mm')} JST
       </p>
     </div>
   );

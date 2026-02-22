@@ -194,11 +194,12 @@ describe('buildLatestSummary', () => {
     expect(latest.today!.date).toBe('2026-02-19');
   });
 
-  it('today is null if no data for reference date', async () => {
+  it('falls back to most recent day if no data for reference date', async () => {
     await setup();
     const daily = buildDailySummaries(files, pricing);
     const latest = buildLatestSummary(daily, '2026-02-20');
-    expect(latest.today).toBeNull();
+    expect(latest.today).not.toBeNull();
+    expect(latest.today!.date).toBe('2026-02-19');
   });
 
   it('7d period covers correct range', async () => {

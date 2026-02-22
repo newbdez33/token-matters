@@ -457,7 +457,15 @@ export function buildLatestSummary(
   const last7Start = subtractDays(referenceDate, 6);
   const last30Start = subtractDays(referenceDate, 29);
 
-  const today = daily.get(referenceDate) ?? null;
+  // Use referenceDate if available, otherwise fall back to most recent day
+  let today = daily.get(referenceDate) ?? null;
+  if (!today) {
+    const dates = Array.from(daily.keys()).sort();
+    const latestDate = dates[dates.length - 1];
+    if (latestDate) {
+      today = daily.get(latestDate) ?? null;
+    }
+  }
 
   return {
     lastUpdated: new Date().toISOString(),
