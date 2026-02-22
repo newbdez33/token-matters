@@ -39,6 +39,17 @@ export function DashboardPage() {
   const providers = period.byProvider;
   const today = latest.today;
 
+  const getDayLabel = (date: string) => {
+    const now = new Date();
+    const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const todayStr = jst.toISOString().slice(0, 10);
+    const yesterdayDate = new Date(jst.getTime() - 24 * 60 * 60 * 1000);
+    const yesterdayStr = yesterdayDate.toISOString().slice(0, 10);
+    if (date === todayStr) return `Today (${formatDate(date)})`;
+    if (date === yesterdayStr) return `Yesterday (${formatDate(date)})`;
+    return formatDate(date);
+  };
+
   return (
     <div className="space-y-8">
       {/* Monthly Total */}
@@ -117,7 +128,7 @@ export function DashboardPage() {
         <>
           <section>
             <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-              {formatDate(today.date)}
+              {getDayLabel(today.date)}
             </h2>
             <div>
               <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
@@ -141,7 +152,7 @@ export function DashboardPage() {
               <hr className="border-border" />
               <section>
                 <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-                  Machines · {formatDate(today.date)}
+                  Machines · {getDayLabel(today.date)}
                 </h2>
                 <MachineBreakdownTable machines={today.byMachine} />
               </section>
@@ -154,7 +165,7 @@ export function DashboardPage() {
               <hr className="border-border" />
               <section>
                 <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-                  Models · {formatDate(today.date)}
+                  Models · {getDayLabel(today.date)}
                 </h2>
                 <ModelBreakdownTable models={today.byModel} />
               </section>
