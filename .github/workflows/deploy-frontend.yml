@@ -1,10 +1,6 @@
-name: Deploy Frontend
+name: Redirect to Cloudflare Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'frontend/**'
   workflow_dispatch:
 
 permissions:
@@ -17,37 +13,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
-
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: frontend/dist
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Create redirect page
+        run: |
+          mkdir -p _site
+          cat > _site/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="refresh" content="0; url=https://tokens.jacky.jp/" />
+            <link rel="canonical" href="https://tokens.jacky.jp/" />
+            <title>Redirecting…</title>
+          </head>
+          <body>
+            <p>Moved to <a href="https://tokens.jacky.jp/">tokens.jacky.jp</a></p>
+          </body>
+          </html>
+          HTML
+          cp _site/index.html _site/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
       - id: deployment
         uses: actions/deploy-pages@v4
