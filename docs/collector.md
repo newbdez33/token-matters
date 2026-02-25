@@ -158,6 +158,19 @@ interface CollectorState {
 
 > 去重的完整设计参见 `architecture.md` 第 4 章。
 
+### 每小时采集与多快照
+
+默认每小时采集一次。每次 `collect(date)` 会重新读取当天所有数据源并聚合，因此同一天内随着用量增长，不同时间点采集到的 records 内容会不同。
+
+文件名格式为 `{date}_{hash}.json`，hash 由 `machine + provider + date + records` 计算。行为如下：
+
+| 场景 | hash | 写入结果 |
+|------|------|---------|
+| 数据与上次采集完全一致 | 相同 | **跳过**（文件已存在） |
+| 当天有新活动，records 变化 | 不同 | 写入新快照文件 |
+
+这意味着同一个 `(machine, provider, date)` 可能存在多个快照文件，每个文件代表该时间点的完整日聚合。这不是重复统计——下游 Summary 聚合时按 `(provider, date, machine)` 分组，**只取 `collectedAt` 最新的文件**，确保最终数据不会重复计算。
+
 ---
 
 ## 7. 定时调度
