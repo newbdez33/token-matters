@@ -34,6 +34,13 @@ collector/
 │   │   ├── glm-coding-parser.ts   # GLM API 响应解析
 │   │   ├── trae-pro.ts            # TRAE Pro Provider
 │   │   └── trae-pro-parser.ts     # TRAE 日志解析 + Token 估算
+│   ├── schedule/
+│   │   ├── types.ts               # ScheduleParams, PlatformScheduler 接口
+│   │   ├── resolve-paths.ts       # 解析 npx/node 绝对路径
+│   │   ├── platform-darwin.ts     # macOS launchd plist 生成
+│   │   ├── platform-linux.ts      # Linux crontab 读写
+│   │   ├── platform-win32.ts      # Windows schtasks 命令
+│   │   └── install.ts             # 调度安装/卸载 orchestrator
 │   └── utils/
 │       ├── date.ts                # 日期/时区工具
 │       └── logger.ts              # 日志输出
@@ -61,6 +68,15 @@ npx tsx collector/src/main.ts --dry-run
 
 # 显示当前配置和 Provider 状态
 npx tsx collector/src/main.ts --status
+
+# 安装定时调度（macOS launchd / Linux cron / Windows Task Scheduler）
+npx tsx collector/src/main.ts --install
+
+# 安装前预览（不实际执行）
+npx tsx collector/src/main.ts --install --dry-run
+
+# 卸载定时调度
+npx tsx collector/src/main.ts --uninstall
 ```
 
 ---
@@ -146,79 +162,44 @@ interface CollectorState {
 
 ## 7. 定时调度
 
-### macOS launchd（每日 00:30 执行）✅ 已部署验证
-
-plist 路径：`~/Library/LaunchAgents/com.token-matters.collector.plist`
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key>
-  <string>com.token-matters.collector</string>
-
-  <key>ProgramArguments</key>
-  <array>
-    <string>/path/to/.nvm/versions/node/vXX/bin/npx</string>
-    <string>tsx</string>
-    <string>/path/to/token-matters/collector/src/main.ts</string>
-  </array>
-
-  <key>WorkingDirectory</key>
-  <string>/path/to/token-matters/collector</string>
-
-  <key>EnvironmentVariables</key>
-  <dict>
-    <key>PATH</key>
-    <string>/path/to/.nvm/versions/node/vXX/bin:/usr/local/bin:/usr/bin:/bin</string>
-    <key>HOME</key>
-    <string>/Users/yourname</string>
-  </dict>
-
-  <key>StartCalendarInterval</key>
-  <dict>
-    <key>Hour</key>
-    <integer>0</integer>
-    <key>Minute</key>
-    <integer>30</integer>
-  </dict>
-
-  <key>StandardOutPath</key>
-  <string>/tmp/token-matters-collector.log</string>
-  <key>StandardErrorPath</key>
-  <string>/tmp/token-matters-collector.log</string>
-</dict>
-</plist>
-```
-
-> **注意**：launchd 不加载 shell profile，必须在 plist 中显式设置 `PATH`（包含 node/npx 所在目录）和 `HOME`。
-
-常用命令：
+推荐使用 CLI 自动安装调度，无需手动编辑平台配置：
 
 ```bash
-# 加载（开机自动生效）
-launchctl load ~/Library/LaunchAgents/com.token-matters.collector.plist
+# 安装（自动检测平台：macOS launchd / Linux cron / Windows Task Scheduler）
+pnpm collect --install
 
-# 手动触发一次
-launchctl start com.token-matters.collector
-
-# 查看状态
-launchctl list | grep token-matters
+# 预览将要生成的配置（不实际执行）
+pnpm collect --install --dry-run
 
 # 卸载
-launchctl unload ~/Library/LaunchAgents/com.token-matters.collector.plist
+pnpm collect --uninstall
 
-# 查看日志
-cat /tmp/token-matters-collector.log
+# 查看调度状态
+pnpm collect --status
 ```
 
-### Linux cron
+可在 `~/.token-matters/config.yaml` 中自定义调度参数（可选，默认每小时 :30 执行）：
 
+```yaml
+schedule:
+  intervalMinutes: 60    # 60 (hourly) 或 1440 (daily)
+  offsetMinute: 30       # 0–59，在每小时/每天的第几分钟执行
+  logFile: /tmp/token-matters-collector.log  # 可选
 ```
-30 0 * * * cd /path/to/token-matters/collector && npx tsx src/main.ts >> /tmp/token-matters-collector.log 2>&1
-```
+
+### 平台细节
+
+| 平台 | 机制 | 安装位置 |
+|------|------|---------|
+| macOS | launchd plist | `~/Library/LaunchAgents/com.token-matters.collector.plist` |
+| Linux | crontab（带 `# token-matters-collector` marker） | 用户 crontab |
+| Windows | Task Scheduler | 任务名 `TokenMattersCollector` |
+
+> **路径解析**：`--install` 自动检测当前运行的 Node 环境（兼容 nvm/fnm），无需手动配置路径。
+
+### 手动安装（参考）
+
+如需手动配置，参见 `collector-deploy.md` Step 5。
 
 ---
 

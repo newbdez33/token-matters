@@ -13,10 +13,13 @@ import { createTraeProProvider } from './providers/trae-pro.js';
 import { createCodexProvider } from './providers/codex.js';
 import { createOpenCodeProvider } from './providers/opencode.js';
 import type { CollectorProvider } from './providers/types.js';
+import { runInstall, runUninstall, getScheduleStatus } from './schedule/install.js';
 
 export interface CliArgs {
   dryRun: boolean;
   status: boolean;
+  install: boolean;
+  uninstall: boolean;
   date?: string;
   from?: string;
   to?: string;
@@ -27,6 +30,8 @@ export function parseArgs(argv: string[]): CliArgs {
   const args: CliArgs = {
     dryRun: false,
     status: false,
+    install: false,
+    uninstall: false,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -49,10 +54,19 @@ export function parseArgs(argv: string[]): CliArgs {
       case '--provider':
         args.provider = argv[++i];
         break;
+      case '--install':
+        args.install = true;
+        break;
+      case '--uninstall':
+        args.uninstall = true;
+        break;
     }
   }
 
   // Validate
+  if (args.install && args.uninstall) {
+    throw new Error('--install and --uninstall cannot be used together');
+  }
   if (args.date && (args.from || args.to)) {
     throw new Error('--date cannot be used with --from/--to');
   }
@@ -173,6 +187,16 @@ async function main() {
     process.exit(1);
   }
 
+  // Install/uninstall schedule
+  if (args.install) {
+    await runInstall(config.schedule, args.dryRun);
+    return;
+  }
+  if (args.uninstall) {
+    await runUninstall(args.dryRun);
+    return;
+  }
+
   // Status mode
   if (args.status) {
     const built = buildProviders(config);
@@ -183,6 +207,9 @@ async function main() {
       const available = await provider.isAvailable();
       logger.info(`Provider ${provider.name}: ${available ? 'available' : 'unavailable'} (${resolvedPath})`);
     }
+    // Schedule status
+    const scheduleStatus = await getScheduleStatus();
+    logger.info(`Schedule: ${scheduleStatus.installed ? 'installed' : 'not installed'} (${scheduleStatus.description})`);
     return;
   }
 

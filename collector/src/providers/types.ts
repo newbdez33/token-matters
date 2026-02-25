@@ -47,9 +47,16 @@ export interface ProviderConfig {
   [key: string]: unknown;
 }
 
+export interface ScheduleConfig {
+  intervalMinutes: 60 | 1440;
+  offsetMinute: number;
+  logFile?: string;
+}
+
 export interface CollectorConfig {
   machine: string;
   dataRepo: string;
   timezone: string;
   providers: Record<string, ProviderConfig>;
+  schedule?: ScheduleConfig;
 }
