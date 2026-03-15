@@ -23,7 +23,7 @@ function PageFallback() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/token-matters">
+    <BrowserRouter>
       <Routes>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />

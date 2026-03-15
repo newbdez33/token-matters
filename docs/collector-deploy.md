@@ -134,7 +134,45 @@ dir C:\projects\token-matters-data\raw\
 
 ## Step 5: Set up scheduled collection
 
-### macOS (launchd)
+The recommended way is to use the built-in `--install` command, which auto-detects your platform and Node environment:
+
+```bash
+# Preview what will be installed
+pnpm collect --install --dry-run
+
+# Install the schedule
+pnpm collect --install
+
+# Verify
+pnpm collect --status
+```
+
+This automatically handles:
+- **macOS**: creates a launchd plist at `~/Library/LaunchAgents/com.token-matters.collector.plist`
+- **Linux**: adds a crontab entry with a `# token-matters-collector` marker
+- **Windows**: creates a Task Scheduler task named `TokenMattersCollector`
+
+To customize the schedule (optional), add to `~/.token-matters/config.yaml`:
+
+```yaml
+schedule:
+  intervalMinutes: 60    # 60 (hourly) or 1440 (daily)
+  offsetMinute: 30       # 0–59, minute within each interval
+  logFile: /tmp/token-matters-collector.log
+```
+
+To uninstall:
+
+```bash
+pnpm collect --uninstall
+```
+
+### Manual setup (reference)
+
+<details>
+<summary>If you prefer to configure scheduling manually, expand this section.</summary>
+
+#### macOS (launchd)
 
 Create the plist file. Replace the placeholder paths first:
 
@@ -207,7 +245,7 @@ launchctl list | grep token-matters
 cat /tmp/token-matters-collector.log
 ```
 
-### Linux (cron)
+#### Linux (cron)
 
 ```bash
 crontab -e
@@ -221,7 +259,7 @@ Add this line (runs daily at 00:30):
 
 > Use full paths — cron does not load your shell profile either.
 
-### Windows (Task Scheduler)
+#### Windows (Task Scheduler)
 
 Find your `npx` path first:
 
@@ -267,6 +305,8 @@ Get-ScheduledTask -TaskName "TokenMattersCollector" | Select-Object State, LastR
 # To remove the task
 Unregister-ScheduledTask -TaskName "TokenMattersCollector" -Confirm:$false
 ```
+
+</details>
 
 ## Troubleshooting
 

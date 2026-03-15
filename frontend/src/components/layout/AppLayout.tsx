@@ -58,12 +58,12 @@ export function AppLayout() {
             Made with ❤️
           </p>
           <a
-            href="https://github.com/newbdez33/token-matters"
+            href="https://jacky.jp"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors no-underline mt-1 inline-block"
           >
-            github.com/newbdez33/token-matters
+            jacky.jp
           </a>
         </div>
       </footer>

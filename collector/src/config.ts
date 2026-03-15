@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { hostname } from 'node:os';
 import { parse as parseYaml } from 'yaml';
 import { expandHome } from './utils/paths.js';
-import type { CollectorConfig } from './providers/types.js';
+import type { CollectorConfig, ScheduleConfig } from './providers/types.js';
 
 function deriveMachineName(): string {
   return hostname()
@@ -46,10 +46,29 @@ export function loadConfig(configPath: string): CollectorConfig {
     ? data.machine
     : deriveMachineName();
 
+  let schedule: ScheduleConfig | undefined;
+  if (data.schedule && typeof data.schedule === 'object') {
+    const s = data.schedule as Record<string, unknown>;
+    const intervalMinutes = s.intervalMinutes ?? 60;
+    if (intervalMinutes !== 60 && intervalMinutes !== 1440) {
+      throw new Error('Config schedule.intervalMinutes must be 60 (hourly) or 1440 (daily)');
+    }
+    const offsetMinute = typeof s.offsetMinute === 'number' ? s.offsetMinute : 30;
+    if (offsetMinute < 0 || offsetMinute > 59 || !Number.isInteger(offsetMinute)) {
+      throw new Error('Config schedule.offsetMinute must be an integer 0–59');
+    }
+    schedule = {
+      intervalMinutes: intervalMinutes as 60 | 1440,
+      offsetMinute,
+      logFile: typeof s.logFile === 'string' ? s.logFile : undefined,
+    };
+  }
+
   return {
     machine,
     dataRepo: expandHome(data.dataRepo),
     timezone: data.timezone ?? 'Asia/Shanghai',
     providers,
+    schedule,
   };
 }

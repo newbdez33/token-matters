@@ -39,6 +39,17 @@ export function DashboardPage() {
   const providers = period.byProvider;
   const today = latest.today;
 
+  const getDayLabel = (date: string) => {
+    const now = new Date();
+    const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const todayStr = jst.toISOString().slice(0, 10);
+    const yesterdayDate = new Date(jst.getTime() - 24 * 60 * 60 * 1000);
+    const yesterdayStr = yesterdayDate.toISOString().slice(0, 10);
+    if (date === todayStr) return `Today (${formatDate(date)})`;
+    if (date === yesterdayStr) return `Yesterday (${formatDate(date)})`;
+    return formatDate(date);
+  };
+
   return (
     <div className="space-y-8">
       {/* Monthly Total */}
@@ -112,47 +123,60 @@ export function DashboardPage() {
 
       <hr className="border-border" />
 
-      {/* Today */}
-      <section>
-        <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-          Today
-        </h2>
-        {today ? (
-          <div>
-            <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-              <p className="text-2xl font-light font-mono tabular-nums tracking-tight">
-                {today.totals.totalTokens.toLocaleString()}
-              </p>
-              <span className="text-xs text-muted-foreground">tokens</span>
-              <span className="text-sm text-muted-foreground font-mono tabular-nums">
-                {formatCost(today.totals.cost.totalUSD)}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatNumber(today.totals.requests)} requests
-            </p>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">No data for today yet.</p>
-        )}
-      </section>
-
-      {/* Models Today */}
-      {today?.byModel && today.byModel.length > 0 && (
+      {/* Latest Day */}
+      {today && (
         <>
-          <hr className="border-border" />
           <section>
             <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-              Models Today
+              {getDayLabel(today.date)}
             </h2>
-            <ModelBreakdownTable models={today.byModel} />
+            <div>
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                <p className="text-2xl font-light font-mono tabular-nums tracking-tight">
+                  {today.totals.totalTokens.toLocaleString()}
+                </p>
+                <span className="text-xs text-muted-foreground">tokens</span>
+                <span className="text-sm text-muted-foreground font-mono tabular-nums">
+                  {formatCost(today.totals.cost.totalUSD)}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {formatNumber(today.totals.requests)} requests
+              </p>
+            </div>
           </section>
+
+          {/* Machines */}
+          {today.byMachine && today.byMachine.length > 0 && (
+            <>
+              <hr className="border-border" />
+              <section>
+                <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+                  Machines · {getDayLabel(today.date)}
+                </h2>
+                <MachineBreakdownTable machines={today.byMachine} />
+              </section>
+            </>
+          )}
+
+          {/* Models */}
+          {today.byModel && today.byModel.length > 0 && (
+            <>
+              <hr className="border-border" />
+              <section>
+                <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+                  Models · {getDayLabel(today.date)}
+                </h2>
+                <ModelBreakdownTable models={today.byModel} />
+              </section>
+            </>
+          )}
         </>
       )}
 
       {/* Last Updated */}
       <p className="text-[10px] text-muted-foreground pt-4">
-        Last updated: {formatDate(latest.lastUpdated, 'MMM D, YYYY HH:mm')}
+        Last updated: {formatDate(latest.lastUpdated, 'MMM D, YYYY HH:mm')} JST
       </p>
     </div>
   );
