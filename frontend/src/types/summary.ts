@@ -38,6 +38,14 @@ export interface MachineSummary {
 export interface ModelSummary {
   model: string;
   provider: string;
+  // Per-model token-class buckets — present on responses from the
+  // live token-beats backend (post-PR #88). Optional for backward
+  // compat with the legacy static-JSON shape, where ModelSummary
+  // only carried totalTokens + requests.
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheCreationTokens?: number;
+  cacheReadTokens?: number;
   totalTokens: number;
   requests: number;
 }

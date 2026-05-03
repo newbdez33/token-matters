@@ -191,8 +191,22 @@ function recomputeDaily(d: DailySummary): DailySummary {
  * (the common case); a small approximation when a provider mixed
  * input-heavy and output-heavy models within the period.
  */
+interface ByModelRow {
+  provider: string;
+  model: string;
+  totalTokens: number;
+  // Optional — present when the backend ships exact per-model
+  // splits (token-beats #88+). Without them we fall back to
+  // share-of-totalTokens allocation against the provider's
+  // aggregate split.
+  inputTokens?: number;
+  outputTokens?: number;
+  cacheCreationTokens?: number;
+  cacheReadTokens?: number;
+}
+
 function applyTotalsFromByModel(
-  byModel: { provider: string; model: string; totalTokens: number }[],
+  byModel: ByModelRow[],
   byProvider: ProviderSummary[],
   totals: TokenTotals,
 ): { providers: ProviderSummary[]; totals: TokenTotals } {
@@ -225,16 +239,41 @@ function applyTotalsFromByModel(
     let provCurrency = 'USD';
     let provUsd = 0;
     for (const m of modelsForProvider) {
-      // Allocate the provider's input/output/cache split to this
-      // model in proportion to its totalTokens share.
-      const share = m.totalTokens / providerTotalTokens;
-      const slice = {
-        inputTokens: p.inputTokens * share,
-        outputTokens: p.outputTokens * share,
-        cacheCreationTokens: p.cacheCreationTokens * share,
-        cacheReadTokens: p.cacheReadTokens * share,
-        totalTokens: m.totalTokens,
+      // Prefer the exact per-model split when the backend
+      // included it (token-beats #88+). Fall back to allocating
+      // the provider's aggregate split proportionally by
+      // totalTokens share when only the legacy ModelSummary
+      // (totalTokens-only) is available.
+      const hasExactSplit =
+        m.inputTokens !== undefined ||
+        m.outputTokens !== undefined ||
+        m.cacheCreationTokens !== undefined ||
+        m.cacheReadTokens !== undefined;
+      let slice: {
+        inputTokens: number;
+        outputTokens: number;
+        cacheCreationTokens: number;
+        cacheReadTokens: number;
+        totalTokens: number;
       };
+      if (hasExactSplit) {
+        slice = {
+          inputTokens: m.inputTokens ?? 0,
+          outputTokens: m.outputTokens ?? 0,
+          cacheCreationTokens: m.cacheCreationTokens ?? 0,
+          cacheReadTokens: m.cacheReadTokens ?? 0,
+          totalTokens: m.totalTokens,
+        };
+      } else {
+        const share = m.totalTokens / providerTotalTokens;
+        slice = {
+          inputTokens: p.inputTokens * share,
+          outputTokens: p.outputTokens * share,
+          cacheCreationTokens: p.cacheCreationTokens * share,
+          cacheReadTokens: p.cacheReadTokens * share,
+          totalTokens: m.totalTokens,
+        };
+      }
       const c = computeProviderCost(p.provider, slice, m.model);
       provAmount += c.amount;
       provCurrency = c.currency;

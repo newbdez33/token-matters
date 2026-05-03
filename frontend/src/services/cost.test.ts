@@ -162,6 +162,77 @@ describe('recomputeCosts', () => {
     expect(out.byProvider[0]!.costUSD).toBeCloseTo(16.5, 4);
   });
 
+  it('prefers exact per-model token split over proportional allocation', () => {
+    // When byModel rows carry their own input/output/cache split
+    // (post token-beats #88), use those directly. This catches the
+    // case where one model is input-heavy and another output-heavy
+    // — proportional allocation by totalTokens would smear the
+    // split across both and produce a subtly wrong cost.
+    const period = {
+      dateRange: { start: '2026-04-23', end: '2026-04-29' },
+      totals: {
+        // 1M opus input only, 1M sonnet output only
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
+        cacheCreationTokens: 0,
+        cacheReadTokens: 0,
+        totalTokens: 2_000_000,
+        cost: ZERO_COST,
+        requests: 2,
+      },
+      byProvider: [
+        {
+          provider: 'claude-code',
+          dataQuality: 'exact' as const,
+          inputTokens: 1_000_000,
+          outputTokens: 1_000_000,
+          cacheCreationTokens: 0,
+          cacheReadTokens: 0,
+          totalTokens: 2_000_000,
+          cost: 0,
+          costUSD: 0,
+          currency: 'USD',
+          requests: 2,
+        },
+      ],
+      byMachine: [],
+      byModel: [
+        {
+          model: 'claude-opus-4-6',
+          provider: 'claude-code',
+          // exact split: opus did all the input, none of the output
+          inputTokens: 1_000_000,
+          outputTokens: 0,
+          cacheCreationTokens: 0,
+          cacheReadTokens: 0,
+          totalTokens: 1_000_000,
+          requests: 1,
+        },
+        {
+          model: 'claude-sonnet-4-6',
+          provider: 'claude-code',
+          inputTokens: 0,
+          outputTokens: 1_000_000,
+          cacheCreationTokens: 0,
+          cacheReadTokens: 0,
+          totalTokens: 1_000_000,
+          requests: 1,
+        },
+      ],
+      dailyTrend: [],
+    };
+    const out = recomputeCosts(period);
+    // opus: 1M input × $15/MTok = $15.00 (no output)
+    // sonnet: 1M output × $15/MTok = $15.00 (no input)
+    // total: $30.00
+    expect(out.totals.cost.totalUSD).toBeCloseTo(30, 4);
+    // Compare to the proportional fallback: it would have given
+    // each model 50% of both input and output:
+    //   opus: 0.5M × $15 (in) + 0.5M × $75 (out) = $7.50 + $37.50 = $45
+    //   sonnet: 0.5M × $3 (in) + 0.5M × $15 (out) = $1.50 + $7.50 = $9
+    //   total: $54 — significantly wrong.
+  });
+
   it('uses byModel on MachineAllTime to price across providers', () => {
     // Machine ran sonnet on claude-code AND o4-mini on codex.
     // Without byModel we'd pass cost through unchanged. With it,
