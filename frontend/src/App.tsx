@@ -1,8 +1,10 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
+import { TokenSetupModal } from '@/components/shared/TokenSetupModal';
+import { ApiAuthError, getCredentials } from '@/services/api';
 
 const ProviderPage = lazy(() =>
   import('@/features/providers/ProviderPage').then((m) => ({ default: m.ProviderPage })),
@@ -22,6 +24,39 @@ function PageFallback() {
 }
 
 export default function App() {
+  // Two distinct prompt triggers: (a) no creds in localStorage on
+  // first load, (b) the backend rejected the stored pair (token
+  // revoked, user disabled, mistyped on entry). We capture (b) via
+  // a window-level event on `unhandledrejection` so we don't have
+  // to thread a callback through every page that might fetch.
+  const [needsSetup, setNeedsSetup] = useState<{ message?: string } | null>(
+    getCredentials() ? null : { message: undefined },
+  );
+
+  useEffect(() => {
+    function onRejection(e: PromiseRejectionEvent) {
+      if (e.reason instanceof ApiAuthError) {
+        setNeedsSetup({ message: 'That user/token pair was rejected. Try again.' });
+        e.preventDefault();
+      }
+    }
+    window.addEventListener('unhandledrejection', onRejection);
+    return () => window.removeEventListener('unhandledrejection', onRejection);
+  }, []);
+
+  if (needsSetup) {
+    return (
+      <TokenSetupModal
+        message={needsSetup.message}
+        onSave={() => {
+          // Reload — easier than threading invalidation through
+          // every cache and store. Fresh start, fresh fetches.
+          window.location.reload();
+        }}
+      />
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>

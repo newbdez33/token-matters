@@ -4,6 +4,13 @@
     "claude-code": {
       "type": "token",
       "models": {
+        "_default": {
+          "inputPerMTok": 3,
+          "outputPerMTok": 15,
+          "cacheCreationPerMTok": 3.75,
+          "cacheReadPerMTok": 0.30,
+          "currency": "USD"
+        },
         "claude-opus-4-6": {
           "inputPerMTok": 15,
           "outputPerMTok": 75,
@@ -30,6 +37,12 @@
     "codex": {
       "type": "token",
       "models": {
+        "_default": {
+          "inputPerMTok": 1.10,
+          "outputPerMTok": 4.40,
+          "cacheReadPerMTok": 0.275,
+          "currency": "USD"
+        },
         "o4-mini": {
           "inputPerMTok": 1.10,
           "outputPerMTok": 4.40,
@@ -59,6 +72,13 @@
     "opencode": {
       "type": "token",
       "models": {
+        "_default": {
+          "inputPerMTok": 3,
+          "outputPerMTok": 15,
+          "cacheCreationPerMTok": 3.75,
+          "cacheReadPerMTok": 0.30,
+          "currency": "USD"
+        },
         "claude-sonnet-4-6": {
           "inputPerMTok": 3,
           "outputPerMTok": 15,
