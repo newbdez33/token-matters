@@ -1,6 +1,12 @@
 # Token Matters — Backend 设计文档
 
 > 版本: v0.2.0 | 最后更新: 2026-02-19
+>
+> ⚠️ **2026-05-04 update** — `tokens.jacky.jp` now reads from the
+> [Token Beats live backend](superpowers/specs/2026-05-03-token-beats-backend-design.md)
+> (Cloudflare Workers + D1) instead of the static collector → data → summary pipeline this
+> document describes. The static pipeline remains fully supported for self-hosted forks
+> that prefer GitHub-Pages-only deployment.
 
 ## 1. 概述
 

@@ -1,6 +1,11 @@
 # Token Matters — Collector 设计文档
 
 > 版本: v0.2.0 | 最后更新: 2026-02-19
+>
+> ⚠️ **2026-05-04 update** — `tokens.jacky.jp` no longer uses this collector — it reads
+> live from the [Token Beats backend](superpowers/specs/2026-05-03-token-beats-backend-design.md)
+> (which has its own desktop tracker). This collector remains supported for self-hosted
+> forks that prefer the static `git push` → GitHub Actions → GitHub Pages pipeline.
 
 ## 1. 概述
 

@@ -1,6 +1,12 @@
 # Token Matters — 数据自动采集技术方案
 
 > 版本: v0.1.0 | 最后更新: 2026-02-19
+>
+> ⚠️ **2026-05-04 update** — The per-provider integration techniques in this document
+> still describe how data is extracted on dev machines. For `tokens.jacky.jp`, the
+> [Token Beats desktop tracker](http://10.43.0.40:30008/GCU/token-beats) does the
+> extraction and uploads to its Workers + D1 backend; the collector + GitHub Pages
+> pipeline below remains supported for self-hosted forks.
 
 ## 1. 概述
 

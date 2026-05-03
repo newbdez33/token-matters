@@ -1,6 +1,11 @@
 # Token Matters — Collector Doctor & Init 设计文档
 
 > 版本: v0.1.0 | 最后更新: 2026-02-20
+>
+> ⚠️ **2026-05-04 update** — `tokens.jacky.jp` no longer uses this collector — it reads
+> live from the [Token Beats backend](superpowers/specs/2026-05-03-token-beats-backend-design.md).
+> The diagnostics and init flows in this doc still apply to self-hosted forks running the
+> static pipeline.
 
 ## 1. 概述
 
