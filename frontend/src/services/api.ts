@@ -58,7 +58,28 @@ const STORAGE_KEYS = {
   token: 'tb.token',
 } as const;
 
+/**
+ * Build-time credentials, injected via Vite env (e.g. Cloudflare
+ * Pages env vars). When BOTH are set, every fetch uses them and
+ * the sign-in modal never appears — convenient for a single-user
+ * personal deploy where you'd rather skip the typing step.
+ *
+ * SECURITY: anything in `import.meta.env.VITE_*` is bundled into
+ * the public JS that the browser downloads. Anyone visiting the
+ * site can read your token by opening devtools. Acceptable when:
+ *   - the site is single-user and you control the deploy, AND
+ *   - the token only has read access to your own data (which is
+ *     the only thing api_tokens grants)
+ * NOT acceptable on a shared / multi-user deployment — leave
+ * VITE_TB_TOKEN unset and the localStorage + modal flow runs
+ * instead.
+ */
+const ENV_USER = import.meta.env.VITE_TB_USER as string | undefined;
+const ENV_TOKEN = import.meta.env.VITE_TB_TOKEN as string | undefined;
+const HAS_ENV_CREDS = Boolean(ENV_USER && ENV_TOKEN);
+
 export function getCredentials(): { user: string; token: string } | null {
+  if (HAS_ENV_CREDS) return { user: ENV_USER!, token: ENV_TOKEN! };
   const user = localStorage.getItem(STORAGE_KEYS.user);
   const token = localStorage.getItem(STORAGE_KEYS.token);
   if (!user || !token) return null;
@@ -66,6 +87,10 @@ export function getCredentials(): { user: string; token: string } | null {
 }
 
 export function setCredentials(user: string, token: string): void {
+  // No-op when env creds are baked in: rotating them means
+  // redeploying with a new VITE_TB_TOKEN, not typing into the
+  // modal. We still write through to localStorage so a later
+  // env-unset deploy keeps the same browser working.
   localStorage.setItem(STORAGE_KEYS.user, user);
   localStorage.setItem(STORAGE_KEYS.token, token);
 }
@@ -79,6 +104,17 @@ export function clearCredentials(): void {
   // Imported lazily so cost.ts and tests don't pull in Dexie just
   // to compute a token.
   import('@/services/cache').then((m) => m.clearCache()).catch(() => {});
+}
+
+/**
+ * True when the running deployment has VITE_TB_USER and
+ * VITE_TB_TOKEN baked in. App.tsx checks this to skip the
+ * sign-in modal entirely; if env creds get rejected (rotation,
+ * revocation, typo at build time) the user still sees an
+ * error banner instead of a phantom modal that won't help.
+ */
+export function hasEnvCredentials(): boolean {
+  return HAS_ENV_CREDS;
 }
 
 function authQS(): string {

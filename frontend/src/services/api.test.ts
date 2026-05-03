@@ -75,6 +75,17 @@ describe('credentials helpers', () => {
     clearCredentials();
     expect(getCredentials()).toBeNull();
   });
+
+  it('hasEnvCredentials() reflects whether VITE_TB_USER + VITE_TB_TOKEN were baked in', async () => {
+    // Default test env doesn't set them, so the running module
+    // reports false. The positive case is covered by a separate
+    // test file (api.env-creds.test.ts) that re-imports the
+    // module with stubbed env vars — `import.meta.env` is read
+    // at module load, so we can't flip it after the fact in this
+    // suite.
+    const { hasEnvCredentials } = await import('./api');
+    expect(hasEnvCredentials()).toBe(false);
+  });
 });
 
 describe('api fetch', () => {
