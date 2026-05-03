@@ -61,6 +61,11 @@ export interface PeriodSummary {
   totals: TokenTotals;
   byProvider: ProviderSummary[];
   byMachine: MachineSummary[];
+  // byModel is optional for backward compat with the static
+  // GitHub-Pages JSON shape; the live token-beats backend
+  // (post-PR #88) always sends it. Frontend cost recompute
+  // uses it when present.
+  byModel?: ModelSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 
@@ -70,6 +75,7 @@ export interface WeeklySummary {
   totals: TokenTotals;
   byProvider: ProviderSummary[];
   byMachine: MachineSummary[];
+  byModel?: ModelSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 
@@ -79,6 +85,7 @@ export interface MonthlySummary {
   totals: TokenTotals;
   byProvider: ProviderSummary[];
   byMachine: MachineSummary[];
+  byModel?: ModelSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 
@@ -86,6 +93,7 @@ export interface ProviderAllTime {
   provider: string;
   dateRange: { start: string; end: string };
   totals: TokenTotals;
+  byModel?: ModelSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 
@@ -93,6 +101,7 @@ export interface MachineAllTime {
   machine: string;
   dateRange: { start: string; end: string };
   totals: TokenTotals;
+  byModel?: ModelSummary[];
   dailyTrend: DailyTrendEntry[];
 }
 

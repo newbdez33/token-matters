@@ -178,13 +178,96 @@ function recomputeDaily(d: DailySummary): DailySummary {
   return { ...d, byProvider: providers, totals };
 }
 
+/**
+ * When the wire format includes `byModel[]` (post token-beats #88),
+ * compute cost as the proportional sum of (provider, model) tokens
+ * × that exact model's pricing. This is the same per-record fold
+ * the upstream summary generator does, just done after-the-fact
+ * from the model-aggregated rows.
+ *
+ * Each model row's cost is approximated by allocating the
+ * provider's full input/output/cache split proportionally by
+ * `totalTokens`. Exact when a provider used only one model
+ * (the common case); a small approximation when a provider mixed
+ * input-heavy and output-heavy models within the period.
+ */
+function applyTotalsFromByModel(
+  byModel: { provider: string; model: string; totalTokens: number }[],
+  byProvider: ProviderSummary[],
+  totals: TokenTotals,
+): { providers: ProviderSummary[]; totals: TokenTotals } {
+  let totalUSD = 0;
+  const byProviderCost: Record<string, { amount: number; currency: string }> = {};
+  // Per-provider running totals so we can aggregate the recomputed
+  // numbers back onto each ProviderSummary row at the end.
+  const provAmounts = new Map<string, { amount: number; currency: string; usd: number }>();
+
+  for (const p of byProvider) {
+    const modelsForProvider = byModel.filter((m) => m.provider === p.provider);
+    const providerTotalTokens = modelsForProvider.reduce(
+      (s, m) => s + m.totalTokens,
+      0,
+    );
+    if (providerTotalTokens === 0) {
+      // No model rows for this provider — fall back to `_default`.
+      const fallback = computeProviderCost(p.provider, p, undefined);
+      const fallbackUSD = convertToUSD(fallback.amount, fallback.currency);
+      provAmounts.set(p.provider, {
+        amount: fallback.amount,
+        currency: fallback.currency,
+        usd: fallbackUSD,
+      });
+      totalUSD += fallbackUSD;
+      byProviderCost[p.provider] = { amount: fallback.amount, currency: fallback.currency };
+      continue;
+    }
+    let provAmount = 0;
+    let provCurrency = 'USD';
+    let provUsd = 0;
+    for (const m of modelsForProvider) {
+      // Allocate the provider's input/output/cache split to this
+      // model in proportion to its totalTokens share.
+      const share = m.totalTokens / providerTotalTokens;
+      const slice = {
+        inputTokens: p.inputTokens * share,
+        outputTokens: p.outputTokens * share,
+        cacheCreationTokens: p.cacheCreationTokens * share,
+        cacheReadTokens: p.cacheReadTokens * share,
+        totalTokens: m.totalTokens,
+      };
+      const c = computeProviderCost(p.provider, slice, m.model);
+      provAmount += c.amount;
+      provCurrency = c.currency;
+      provUsd += convertToUSD(c.amount, c.currency);
+    }
+    provAmounts.set(p.provider, { amount: provAmount, currency: provCurrency, usd: provUsd });
+    totalUSD += provUsd;
+    byProviderCost[p.provider] = { amount: provAmount, currency: provCurrency };
+  }
+
+  const recomputedProviders = byProvider.map((p) => {
+    const a = provAmounts.get(p.provider);
+    if (!a) return p;
+    return { ...p, cost: a.amount, costUSD: a.usd, currency: a.currency };
+  });
+
+  return {
+    providers: recomputedProviders,
+    totals: {
+      ...totals,
+      cost: { totalUSD, byProvider: byProviderCost },
+    },
+  };
+}
+
 function recomputePeriod<
   T extends PeriodSummary | WeeklySummary | MonthlySummary | ProviderAllTime | MachineAllTime,
 >(p: T): T {
   if (!('byProvider' in p)) {
-    // ProviderAllTime: scoped to one provider, no per-model
-    // breakdown. Treat the totals as a single-provider bucket
-    // priced under that provider's `_default` model.
+    // ProviderAllTime: scoped to one provider. When byModel is
+    // present (post-#88), compute cost as the weighted sum across
+    // each model. Without it, fall back to the provider's
+    // `_default` pricing applied to the totals as a single bucket.
     if ('provider' in p) {
       const synthetic: ProviderSummary = {
         provider: p.provider,
@@ -199,21 +282,59 @@ function recomputePeriod<
         currency: 'USD',
         requests: p.totals.requests,
       };
-      const { totals } = applyToProviders([synthetic], p.totals);
+      const { totals } =
+        p.byModel && p.byModel.length > 0
+          ? applyTotalsFromByModel(p.byModel, [synthetic], p.totals)
+          : applyToProviders([synthetic], p.totals);
       return { ...p, totals };
     }
 
-    // MachineAllTime: spans every provider this machine touched,
-    // but the wire format doesn't include the per-provider split.
-    // We have no honest way to price the totals — making one up
-    // (e.g. picking some default model) would be a confident lie.
-    // Pass the cost fields through unchanged; the dashboard can
-    // show "—" or skip the cost line on machine pages until the
-    // backend grows a per-provider breakdown for /machines/:id.
+    // MachineAllTime: needs byModel because totals span multiple
+    // providers. With byModel we can price each (provider, model)
+    // row exactly. Without it (legacy backend), pass cost through
+    // unchanged — fabricating a number from the totals would be a
+    // confident lie.
+    if (p.byModel && p.byModel.length > 0) {
+      // Synthesize one ProviderSummary per provider observed in
+      // byModel so applyTotalsFromByModel can do its weighted fold.
+      const provs = new Map<string, ProviderSummary>();
+      for (const m of p.byModel) {
+        if (provs.has(m.provider)) continue;
+        // Each synthetic row carries a per-provider share of the
+        // machine's totals proportional to that provider's tokens.
+        const provTokens = p.byModel
+          .filter((x) => x.provider === m.provider)
+          .reduce((s, x) => s + x.totalTokens, 0);
+        const share = p.totals.totalTokens > 0 ? provTokens / p.totals.totalTokens : 0;
+        provs.set(m.provider, {
+          provider: m.provider,
+          dataQuality: 'exact',
+          inputTokens: p.totals.inputTokens * share,
+          outputTokens: p.totals.outputTokens * share,
+          cacheCreationTokens: p.totals.cacheCreationTokens * share,
+          cacheReadTokens: p.totals.cacheReadTokens * share,
+          totalTokens: provTokens,
+          cost: 0,
+          costUSD: 0,
+          currency: 'USD',
+          requests: 0,
+        });
+      }
+      const { totals } = applyTotalsFromByModel(
+        p.byModel,
+        [...provs.values()],
+        p.totals,
+      );
+      return { ...p, totals };
+    }
     return p;
   }
 
-  const { providers, totals } = applyToProviders(p.byProvider, p.totals);
+  // PeriodSummary / WeeklySummary / MonthlySummary
+  const { providers, totals } =
+    p.byModel && p.byModel.length > 0
+      ? applyTotalsFromByModel(p.byModel, p.byProvider, p.totals)
+      : applyToProviders(p.byProvider, p.totals);
   return { ...p, byProvider: providers, totals };
 }
 
@@ -244,8 +365,13 @@ export function recomputeCosts<
       today: ls.today ? recomputeDaily(ls.today) : null,
     } as T;
   }
-  // DailySummary
-  if ('byModel' in input) {
+  // DailySummary — uniquely has top-level `date` (PeriodSummary
+  // uses dateRange.start/end, weekly adds `week`, monthly
+  // `month`, and provider/machine all-time have their own
+  // discriminators). Until #88 ships, the previous version
+  // dispatched on `'byModel' in input`, which mis-routes once
+  // PeriodSummary also carries byModel.
+  if ('date' in input) {
     return recomputeDaily(input as DailySummary) as T;
   }
   // PeriodSummary / WeeklySummary / MonthlySummary / ProviderAllTime / MachineAllTime
