@@ -1,10 +1,10 @@
 # Token Matters
 
-![Token Usage](https://newbdez33.github.io/token-matters-summary/badge/token-usage.svg)
+![Token Usage](https://token-beats-api.jacky-1a4.workers.dev/v1/badge/jacky@gcu.co.jp.svg)
 
 Personal AI token usage tracker and dashboard. Monitor your token consumption and costs across Claude Code, GLM Coding, TRAE Pro, and more.
 
-**Live Dashboard**: [newbdez33.github.io/token-matters](https://newbdez33.github.io/token-matters/)
+**Live Dashboard**: [tokens.jacky.jp](https://tokens.jacky.jp)
 
 ## Architecture
 
