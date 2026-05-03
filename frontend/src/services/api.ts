@@ -30,6 +30,29 @@ export class ApiAuthError extends Error {
   }
 }
 
+/**
+ * Direct subscription registry for auth failures.
+ *
+ * The first iteration relied on `window.unhandledrejection` to
+ * reach <App />, but every fetch path is wrapped in try/catch by
+ * its caller (the data store, each lazy page) — the rejection
+ * never escapes, so the listener never fires and the user is
+ * stuck with a generic error and no way back to the sign-in
+ * modal. Pushing the event from inside `fetchJSON` instead means
+ * we don't depend on whether the caller swallowed the throw.
+ */
+type AuthErrorListener = () => void;
+const authErrorListeners = new Set<AuthErrorListener>();
+
+export function onAuthError(listener: AuthErrorListener): () => void {
+  authErrorListeners.add(listener);
+  return () => authErrorListeners.delete(listener);
+}
+
+function emitAuthError(): void {
+  for (const l of authErrorListeners) l();
+}
+
 const STORAGE_KEYS = {
   user: 'tb.user',
   token: 'tb.token',
@@ -50,6 +73,12 @@ export function setCredentials(user: string, token: string): void {
 export function clearCredentials(): void {
   localStorage.removeItem(STORAGE_KEYS.user);
   localStorage.removeItem(STORAGE_KEYS.token);
+  // Drop the IndexedDB cache too: even with per-user key prefixes
+  // (see useDataStore.userKey), leaving entries behind means the
+  // next account on this browser pays the cleanup cost forever.
+  // Imported lazily so cost.ts and tests don't pull in Dexie just
+  // to compute a token.
+  import('@/services/cache').then((m) => m.clearCache()).catch(() => {});
 }
 
 function authQS(): string {
@@ -60,8 +89,19 @@ function authQS(): string {
 
 async function fetchJSON<T>(path: string): Promise<T> {
   const sep = path.includes('?') ? '&' : '?';
-  const res = await fetch(`${BASE}/${path}${sep}${authQS()}`);
-  if (res.status === 401) throw new ApiAuthError();
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/${path}${sep}${authQS()}`);
+  } catch (err) {
+    // authQS() throws ApiAuthError when localStorage has no creds —
+    // surface that to subscribers before re-throwing.
+    if (err instanceof ApiAuthError) emitAuthError();
+    throw err;
+  }
+  if (res.status === 401) {
+    emitAuthError();
+    throw new ApiAuthError();
+  }
   if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`);
   return res.json() as Promise<T>;
 }

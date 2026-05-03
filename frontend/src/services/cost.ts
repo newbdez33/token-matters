@@ -181,27 +181,36 @@ function recomputeDaily(d: DailySummary): DailySummary {
 function recomputePeriod<
   T extends PeriodSummary | WeeklySummary | MonthlySummary | ProviderAllTime | MachineAllTime,
 >(p: T): T {
-  // ProviderAllTime / MachineAllTime carry totals but no
-  // ProviderSummary[] or byModel — they're already scoped to a
-  // single provider/machine. Recompute their `totals.cost` from
-  // the totals' own token split, treating the row as a single
-  // provider bucket.
   if (!('byProvider' in p)) {
-    const synthetic: ProviderSummary = {
-      provider: 'provider' in p ? p.provider : 'unknown',
-      dataQuality: 'exact',
-      inputTokens: p.totals.inputTokens,
-      outputTokens: p.totals.outputTokens,
-      cacheCreationTokens: p.totals.cacheCreationTokens,
-      cacheReadTokens: p.totals.cacheReadTokens,
-      totalTokens: p.totals.totalTokens,
-      cost: 0,
-      costUSD: 0,
-      currency: 'USD',
-      requests: p.totals.requests,
-    };
-    const { totals } = applyToProviders([synthetic], p.totals);
-    return { ...p, totals };
+    // ProviderAllTime: scoped to one provider, no per-model
+    // breakdown. Treat the totals as a single-provider bucket
+    // priced under that provider's `_default` model.
+    if ('provider' in p) {
+      const synthetic: ProviderSummary = {
+        provider: p.provider,
+        dataQuality: 'exact',
+        inputTokens: p.totals.inputTokens,
+        outputTokens: p.totals.outputTokens,
+        cacheCreationTokens: p.totals.cacheCreationTokens,
+        cacheReadTokens: p.totals.cacheReadTokens,
+        totalTokens: p.totals.totalTokens,
+        cost: 0,
+        costUSD: 0,
+        currency: 'USD',
+        requests: p.totals.requests,
+      };
+      const { totals } = applyToProviders([synthetic], p.totals);
+      return { ...p, totals };
+    }
+
+    // MachineAllTime: spans every provider this machine touched,
+    // but the wire format doesn't include the per-provider split.
+    // We have no honest way to price the totals — making one up
+    // (e.g. picking some default model) would be a confident lie.
+    // Pass the cost fields through unchanged; the dashboard can
+    // show "—" or skip the cost line on machine pages until the
+    // backend grows a per-provider breakdown for /machines/:id.
+    return p;
   }
 
   const { providers, totals } = applyToProviders(p.byProvider, p.totals);

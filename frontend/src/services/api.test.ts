@@ -5,7 +5,15 @@ import {
   setCredentials,
   clearCredentials,
   getCredentials,
+  onAuthError,
 } from './api';
+
+// Stub the dynamic import inside clearCredentials so jsdom doesn't
+// try to spin up IndexedDB. We don't care what cache.clearCache does
+// in this suite — it's an async fire-and-forget side effect.
+vi.mock('@/services/cache', () => ({
+  clearCache: vi.fn(async () => {}),
+}));
 
 // jsdom's localStorage provider in this vitest setup ships
 // without `clear()` and `removeItem()` actually persisting; back
@@ -118,6 +126,44 @@ describe('api fetch', () => {
       vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }),
     );
     await expect(api.getDaily('2026-04-29')).rejects.toThrow(/500/);
+  });
+
+  it('emits onAuthError to subscribers when fetch sees 401', async () => {
+    setCredentials('alice@gcu.co.jp', 'tok123');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({ error: 'Unauthorized' }),
+      }),
+    );
+    const listener = vi.fn();
+    const unsubscribe = onAuthError(listener);
+    await expect(api.getDaily('2026-04-29')).rejects.toBeInstanceOf(ApiAuthError);
+    expect(listener).toHaveBeenCalledTimes(1);
+    unsubscribe();
+  });
+
+  it('emits onAuthError when no creds in localStorage either', async () => {
+    const listener = vi.fn();
+    const unsubscribe = onAuthError(listener);
+    await expect(api.getMeta()).rejects.toBeInstanceOf(ApiAuthError);
+    expect(listener).toHaveBeenCalledTimes(1);
+    unsubscribe();
+  });
+
+  it('does NOT emit onAuthError on 5xx (so non-auth failures stay scoped)', async () => {
+    setCredentials('alice@gcu.co.jp', 'tok123');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }),
+    );
+    const listener = vi.fn();
+    const unsubscribe = onAuthError(listener);
+    await expect(api.getDaily('2026-04-29')).rejects.toThrow(/500/);
+    expect(listener).not.toHaveBeenCalled();
+    unsubscribe();
   });
 
   it('runs the response through recomputeCosts', async () => {

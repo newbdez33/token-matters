@@ -111,6 +111,33 @@ describe('recomputeCosts', () => {
     expect(out.totals.cost.totalUSD).toBeCloseTo(6, 5);
   });
 
+  it('passes MachineAllTime cost through unchanged (no provider hint to price by)', () => {
+    // Regression: an earlier version synthesized a `provider:
+    // 'unknown'` row, which had no pricing entry, and zeroed out
+    // any pre-computed cost on the machine page. The wire format
+    // doesn't carry a per-provider split for machine totals, so
+    // there is no honest way to price them — leave cost alone and
+    // let the UI render "—" if it cares.
+    const m = {
+      machine: 'mbp-jacky',
+      dateRange: { start: '2026-04-01', end: '2026-04-29' },
+      totals: {
+        inputTokens: 2_000_000,
+        outputTokens: 1_000_000,
+        cacheCreationTokens: 0,
+        cacheReadTokens: 0,
+        totalTokens: 3_000_000,
+        // Pretend the backend grew the ability to compute machine
+        // cost server-side — we should NOT clobber it.
+        cost: { totalUSD: 42.5, byProvider: {} },
+        requests: 7,
+      },
+      dailyTrend: [],
+    };
+    const out = recomputeCosts(m);
+    expect(out.totals.cost.totalUSD).toBe(42.5);
+  });
+
   it('zeros cost for unknown providers (e.g. removed pricing)', () => {
     const d = makeDaily();
     d.byProvider[0]!.provider = 'unknown-provider';
