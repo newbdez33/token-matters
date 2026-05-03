@@ -8,8 +8,19 @@ import type {
   ProviderAllTime,
   MachineAllTime,
 } from '@/types/summary';
-import { api } from '@/services/api';
+import { api, getCredentials } from '@/services/api';
 import { fetchWithCache } from '@/services/cache';
+
+/**
+ * Prefix every cache key with the current user's email so two
+ * accounts using the same browser don't read each other's
+ * summaries. Falls back to `anon` only as a defensive default —
+ * the data store should never run without creds because the
+ * sign-in modal blocks the UI until they're set.
+ */
+function userKey(): string {
+  return getCredentials()?.user ?? 'anon';
+}
 
 interface DataStore {
   meta: SummaryMeta | null;
@@ -45,9 +56,10 @@ export const useDataStore = create<DataStore>((set, get) => ({
     if (get().latest) return; // already initialized
     set({ isLoading: true, error: null });
     try {
+      const u = userKey();
       const [meta, latest] = await Promise.all([
-        fetchWithCache('meta', api.getMeta),
-        fetchWithCache('latest', api.getLatest),
+        fetchWithCache(`${u}:meta`, api.getMeta),
+        fetchWithCache(`${u}:latest`, api.getLatest),
       ]);
       set({ meta, latest, isLoading: false });
     } catch (e) {
@@ -58,7 +70,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   fetchDaily: async (date: string) => {
     const cached = get().dailyCache[date];
     if (cached) return cached;
-    const data = await fetchWithCache(`daily:${date}`, () => api.getDaily(date));
+    const data = await fetchWithCache(`${userKey()}:daily:${date}`, () => api.getDaily(date));
     set((s) => ({ dailyCache: { ...s.dailyCache, [date]: data } }));
     return data;
   },
@@ -66,7 +78,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   fetchWeekly: async (week: string) => {
     const cached = get().weeklyCache[week];
     if (cached) return cached;
-    const data = await fetchWithCache(`weekly:${week}`, () => api.getWeekly(week));
+    const data = await fetchWithCache(`${userKey()}:weekly:${week}`, () => api.getWeekly(week));
     set((s) => ({ weeklyCache: { ...s.weeklyCache, [week]: data } }));
     return data;
   },
@@ -74,7 +86,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   fetchMonthly: async (month: string) => {
     const cached = get().monthlyCache[month];
     if (cached) return cached;
-    const data = await fetchWithCache(`monthly:${month}`, () => api.getMonthly(month));
+    const data = await fetchWithCache(`${userKey()}:monthly:${month}`, () => api.getMonthly(month));
     set((s) => ({ monthlyCache: { ...s.monthlyCache, [month]: data } }));
     return data;
   },
@@ -82,7 +94,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   fetchProvider: async (id: string) => {
     const cached = get().providerCache[id];
     if (cached) return cached;
-    const data = await fetchWithCache(`provider:${id}`, () => api.getProvider(id));
+    const data = await fetchWithCache(`${userKey()}:provider:${id}`, () => api.getProvider(id));
     set((s) => ({ providerCache: { ...s.providerCache, [id]: data } }));
     return data;
   },
@@ -90,7 +102,7 @@ export const useDataStore = create<DataStore>((set, get) => ({
   fetchMachine: async (id: string) => {
     const cached = get().machineCache[id];
     if (cached) return cached;
-    const data = await fetchWithCache(`machine:${id}`, () => api.getMachine(id));
+    const data = await fetchWithCache(`${userKey()}:machine:${id}`, () => api.getMachine(id));
     set((s) => ({ machineCache: { ...s.machineCache, [id]: data } }));
     return data;
   },
