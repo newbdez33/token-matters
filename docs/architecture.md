@@ -1,10 +1,18 @@
 # Token Matters — 系统架构文档
 
 > 版本: v0.2.0 | 最后更新: 2026-02-19
+>
+> ⚠️ **2026-05-04 update** — Production at [`tokens.jacky.jp`](https://tokens.jacky.jp) now reads from
+> the [Token Beats live backend](superpowers/specs/2026-05-03-token-beats-backend-design.md)
+> (Cloudflare Workers + D1, frontend connects via `?user=&token=` for near-real-time data).
+> The "three-component + dual-repo" static-aggregation pipeline this document describes
+> is now the **second supported path** — referred to as *Option B* in the main README's
+> Architecture section. It is still fully supported and remains the right choice for forks
+> that want zero backend infrastructure (GitHub Pages only).
 
-## 1. 架构概述
+## 1. 架构概述（静态流水线 / Option B）
 
-Token Matters 采用**三组件 + 双仓库架构**，将隐私数据与公开数据分离，无需传统后端服务或数据库。
+Token Matters 静态流水线采用**三组件 + 双仓库架构**，将隐私数据与公开数据分离，无需传统后端服务或数据库。
 
 ```
 开发机 (macOS / Linux)

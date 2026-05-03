@@ -1,6 +1,12 @@
 # Token Matters — 实施路线图
 
 > 版本: v0.3.0 | 最后更新: 2026-02-20
+>
+> ⚠️ **2026-05-04 update** — The Phase 2 backend plans in this roadmap have been
+> superseded by the Token Beats live backend integration; see
+> [`superpowers/specs/2026-05-03-token-beats-backend-design.md`](superpowers/specs/2026-05-03-token-beats-backend-design.md)
+> for the realised design. Earlier phases (collector, summary aggregator, GitHub Pages
+> frontend) shipped as documented and remain the basis of self-hosted forks.
 
 ## 1. 总体阶段划分
 

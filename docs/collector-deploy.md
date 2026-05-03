@@ -1,6 +1,11 @@
 # Collector Deployment Guide
 
 > Last updated: 2026-02-20
+>
+> ⚠️ **2026-05-04 update** — `tokens.jacky.jp` no longer uses this collector — it reads
+> live from the [Token Beats backend](superpowers/specs/2026-05-03-token-beats-backend-design.md).
+> This guide remains accurate for self-hosted forks that run the static
+> collector → token-matters-data → token-matters-summary pipeline.
 
 Deploy the Collector on a new machine to start collecting token usage data.
 

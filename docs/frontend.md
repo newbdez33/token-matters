@@ -1,6 +1,12 @@
 # Token Matters — Frontend 设计文档
 
 > 版本: v0.2.0 | 最后更新: 2026-02-19
+>
+> ⚠️ **2026-05-04 update** — As of `tokens.jacky.jp`, the data layer described here
+> (`services/api.ts` reading static GitHub Pages JSON) has been swapped for the
+> [Token Beats live backend](superpowers/specs/2026-05-03-token-beats-backend-design.md)
+> via `VITE_TB_API_BASE`. Component / page / styling decisions in this doc are still
+> accurate; the data-source section is now informational for self-hosted forks.
 
 ## 1. 概述
 

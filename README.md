@@ -8,6 +8,51 @@ Personal AI token usage tracker and dashboard. Monitor your token consumption an
 
 ## Architecture
 
+The frontend supports **two backends**. Pick whichever fits your situation:
+
+### Option A · Live backend (token-beats)
+
+What `tokens.jacky.jp` runs as of 2026-05-04. The frontend reads
+directly from the [Token Beats](http://10.43.0.40:30008/GCU/token-beats)
+Cloudflare Workers + D1 backend. No collector, no GitHub Pages,
+data refreshes within minutes of the desktop tracker uploading.
+
+```mermaid
+graph LR
+    subgraph Dev Machines
+        T[Token Beats<br/>desktop tracker]
+    end
+
+    subgraph "Cloudflare"
+        W[Workers + D1<br/>token-beats-api]
+    end
+
+    F[Frontend<br/>React SPA on CF Pages]
+
+    T -- "/v1/events upload" --> W
+    F -- "/v1/summary/* fetch" --> W
+```
+
+Configure via two Vite env vars (see
+[`docs/superpowers/specs/2026-05-03-token-beats-backend-design.md`](docs/superpowers/specs/2026-05-03-token-beats-backend-design.md)):
+
+```env
+VITE_TB_API_BASE = https://token-beats-api.jacky-1a4.workers.dev/v1/summary
+VITE_TB_USER     = your@email                # optional, bakes creds into bundle
+VITE_TB_TOKEN    = <api token>               # optional, only for single-user deploys
+```
+
+Without the optional creds, the dashboard prompts each visitor for
+their own user/token pair. Tokens are admin-issued from
+[`api_tokens`](http://10.43.0.40:30008/GCU/token-beats/src/branch/main/migrations/0011_api_tokens.sql)
+in the Token Beats D1 — see the runbook in that repo for issuance
+SOP.
+
+### Option B · Self-hosted static pipeline (legacy / OSS)
+
+The original three-repo design. Still fully supported for forks
+that prefer no backend infrastructure — just GitHub Pages.
+
 ```mermaid
 graph LR
     subgraph Dev Machine
@@ -98,7 +143,11 @@ pnpm collect --dry-run      # preview without writing
 
 ## Frontend
 
-React SPA dashboard that reads summary JSON from GitHub Pages.
+React SPA dashboard. Reads from whichever backend the deployment
+is configured for (see Architecture above). For local dev,
+either point `VITE_TB_API_BASE` at a Token Beats Worker or leave
+it unset to fall back to a `token-matters-summary`-shaped JSON
+URL.
 
 | Page | Path | Description |
 |------|------|-------------|
@@ -126,6 +175,14 @@ pnpm test       # run tests
 | Hosting | GitHub Pages |
 
 ## Documentation
+
+**Live backend (Option A) — current production:**
+
+| Document | Contents |
+|----------|----------|
+| [`superpowers/specs/2026-05-03-token-beats-backend-design.md`](docs/superpowers/specs/2026-05-03-token-beats-backend-design.md) | Design spec for the Token Beats backend integration — API surface, auth, cost model, frontend wiring |
+
+**Static pipeline (Option B — legacy / self-hosted) — these docs describe the original three-repo flow:**
 
 | Document | Contents |
 |----------|----------|
