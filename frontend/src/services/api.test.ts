@@ -6,6 +6,7 @@ import {
   clearCredentials,
   getCredentials,
   onAuthError,
+  todayJST,
 } from './api';
 
 // Stub the dynamic import inside clearCredentials so jsdom doesn't
@@ -225,5 +226,47 @@ describe('api fetch', () => {
     const out = await api.getDaily('2026-04-29');
     // Cost was 0 on the wire — frontend must fill it.
     expect(out.totals.cost.totalUSD).toBeGreaterThan(0);
+  });
+});
+
+describe('todayJST', () => {
+  it('rolls over at 09:00 JST, not at UTC midnight', () => {
+    expect(todayJST(new Date('2026-09-28T14:59:59Z'))).toBe('2026-09-28');
+    expect(todayJST(new Date('2026-09-28T15:00:00Z'))).toBe('2026-09-29');
+  });
+});
+
+describe('api.getLatest', () => {
+  it('anchors the summary on the JST calendar date', async () => {
+    setCredentials('alice@gcu.co.jp', 'tok123');
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-28T20:30:00Z')); // 05:30 JST on the 29th
+    try {
+      const period = {
+        dateRange: { start: '2026-09-23', end: '2026-09-29' },
+        totals: SAMPLE_DAILY.totals,
+        byProvider: [],
+        byMachine: [],
+        byModel: [],
+        dailyTrend: [],
+      };
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          lastUpdated: '2026-09-28T20:30:00Z',
+          last7Days: period,
+          last30Days: period,
+          today: null,
+        }),
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
+      await api.getLatest();
+      const calledUrl = fetchMock.mock.calls[0]![0] as string;
+      expect(calledUrl).toContain('/latest?date=2026-09-29&');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

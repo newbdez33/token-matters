@@ -57,11 +57,15 @@ export const useDataStore = create<DataStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const u = userKey();
+      // A stale cache entry comes back immediately and is refreshed in
+      // the background; the callbacks swap the fresh copy into state so
+      // the dashboard doesn't sit on the previous visit's numbers.
       const [meta, latest] = await Promise.all([
-        fetchWithCache(`${u}:meta`, api.getMeta),
-        fetchWithCache(`${u}:latest`, api.getLatest),
+        fetchWithCache(`${u}:meta`, api.getMeta, (fresh) => set({ meta: fresh })),
+        fetchWithCache(`${u}:latest`, api.getLatest, (fresh) => set({ latest: fresh })),
       ]);
-      set({ meta, latest, isLoading: false });
+      // Never overwrite a copy that was revalidated before we got here.
+      set((s) => ({ meta: s.meta ?? meta, latest: s.latest ?? latest, isLoading: false }));
     } catch (e) {
       set({ error: (e as Error).message, isLoading: false });
     }
@@ -70,40 +74,60 @@ export const useDataStore = create<DataStore>((set, get) => ({
   fetchDaily: async (date: string) => {
     const cached = get().dailyCache[date];
     if (cached) return cached;
-    const data = await fetchWithCache(`${userKey()}:daily:${date}`, () => api.getDaily(date));
-    set((s) => ({ dailyCache: { ...s.dailyCache, [date]: data } }));
+    const data = await fetchWithCache(
+      `${userKey()}:daily:${date}`,
+      () => api.getDaily(date),
+      (fresh) => set((s) => ({ dailyCache: { ...s.dailyCache, [date]: fresh } })),
+    );
+    set((s) => ({ dailyCache: { ...s.dailyCache, [date]: s.dailyCache[date] ?? data } }));
     return data;
   },
 
   fetchWeekly: async (week: string) => {
     const cached = get().weeklyCache[week];
     if (cached) return cached;
-    const data = await fetchWithCache(`${userKey()}:weekly:${week}`, () => api.getWeekly(week));
-    set((s) => ({ weeklyCache: { ...s.weeklyCache, [week]: data } }));
+    const data = await fetchWithCache(
+      `${userKey()}:weekly:${week}`,
+      () => api.getWeekly(week),
+      (fresh) => set((s) => ({ weeklyCache: { ...s.weeklyCache, [week]: fresh } })),
+    );
+    set((s) => ({ weeklyCache: { ...s.weeklyCache, [week]: s.weeklyCache[week] ?? data } }));
     return data;
   },
 
   fetchMonthly: async (month: string) => {
     const cached = get().monthlyCache[month];
     if (cached) return cached;
-    const data = await fetchWithCache(`${userKey()}:monthly:${month}`, () => api.getMonthly(month));
-    set((s) => ({ monthlyCache: { ...s.monthlyCache, [month]: data } }));
+    const data = await fetchWithCache(
+      `${userKey()}:monthly:${month}`,
+      () => api.getMonthly(month),
+      (fresh) => set((s) => ({ monthlyCache: { ...s.monthlyCache, [month]: fresh } })),
+    );
+    set((s) => ({ monthlyCache: { ...s.monthlyCache, [month]: s.monthlyCache[month] ?? data } }));
     return data;
   },
 
   fetchProvider: async (id: string) => {
     const cached = get().providerCache[id];
     if (cached) return cached;
-    const data = await fetchWithCache(`${userKey()}:provider:${id}`, () => api.getProvider(id));
-    set((s) => ({ providerCache: { ...s.providerCache, [id]: data } }));
+    const data = await fetchWithCache(
+      `${userKey()}:provider:${id}`,
+      () => api.getProvider(id),
+      (fresh) => set((s) => ({ providerCache: { ...s.providerCache, [id]: fresh } })),
+    );
+    set((s) => ({ providerCache: { ...s.providerCache, [id]: s.providerCache[id] ?? data } }));
     return data;
   },
 
   fetchMachine: async (id: string) => {
     const cached = get().machineCache[id];
     if (cached) return cached;
-    const data = await fetchWithCache(`${userKey()}:machine:${id}`, () => api.getMachine(id));
-    set((s) => ({ machineCache: { ...s.machineCache, [id]: data } }));
+    const data = await fetchWithCache(
+      `${userKey()}:machine:${id}`,
+      () => api.getMachine(id),
+      (fresh) => set((s) => ({ machineCache: { ...s.machineCache, [id]: fresh } })),
+    );
+    set((s) => ({ machineCache: { ...s.machineCache, [id]: s.machineCache[id] ?? data } }));
     return data;
   },
 }));

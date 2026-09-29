@@ -143,6 +143,17 @@ async function fetchJSON<T>(path: string): Promise<T> {
 }
 
 /**
+ * Calendar date in JST (yyyy-mm-dd). The backend anchors `/latest` on
+ * the date it is given and falls back to UTC otherwise, which leaves
+ * the "today" card and the 7 / 30-day windows a day behind between
+ * 00:00 and 09:00 JST. The dashboard labels days in JST, so it asks
+ * for JST.
+ */
+export function todayJST(now: Date = new Date()): string {
+  return new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+/**
  * The Token Beats backend always emits cost = 0 (it doesn't carry
  * pricing). The frontend is the source of truth for cost: every
  * fetch flows through `recomputeCosts()` so the dashboard sees the
@@ -150,7 +161,8 @@ async function fetchJSON<T>(path: string): Promise<T> {
  */
 export const api = {
   getMeta: () => fetchJSON<SummaryMeta>('meta'),
-  getLatest: async () => recomputeCosts(await fetchJSON<LatestSummary>('latest')),
+  getLatest: async () =>
+    recomputeCosts(await fetchJSON<LatestSummary>(`latest?date=${todayJST()}`)),
   getDaily: async (date: string) =>
     recomputeCosts(await fetchJSON<DailySummary>(`daily/${date}`)),
   getWeekly: async (week: string) =>

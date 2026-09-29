@@ -41,19 +41,32 @@ export async function isFresh(key: string): Promise<boolean> {
   return Date.now() - entry.fetchedAt < MAX_AGE_MS;
 }
 
+/**
+ * Stale-while-revalidate: a cached entry is returned immediately; once
+ * it is older than MAX_AGE_MS it is refreshed in the background. The
+ * refreshed data is written back to the cache AND handed to
+ * `onRevalidated`, so callers that keep the result in UI state can
+ * swap it in — otherwise the page keeps showing the previous visit's
+ * numbers until the next reload. A failed refresh is silent: the
+ * stale entry stays and `onRevalidated` is never called.
+ */
 export async function fetchWithCache<T>(
   key: string,
   fetcher: () => Promise<T>,
+  onRevalidated?: (data: T) => void,
 ): Promise<T> {
-  // stale-while-revalidate: return cached immediately, refresh in background
   const cached = await getCached<T>(key);
   const fresh = await isFresh(key);
 
   if (cached && fresh) return cached;
 
   if (cached) {
-    // stale: return cached, refresh in background
-    fetcher().then((data) => setCache(key, data)).catch(() => {});
+    fetcher()
+      .then(async (data) => {
+        await setCache(key, data);
+        onRevalidated?.(data);
+      })
+      .catch(() => {});
     return cached;
   }
 
